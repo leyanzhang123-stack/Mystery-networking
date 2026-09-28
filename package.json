@@ -1,0 +1,11 @@
+{
+  "name": "mystery-networking",
+  "version": "1.0.0",
+  "description": "Pre-event mystery networking for RESTO 2027 — matching, anonymous chat, weekly tasks and a live reveal.",
+  "private": true,
+  "type": "commonjs",
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "start": "node server/index.js"
+  }
+}
