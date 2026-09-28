@@ -15,18 +15,44 @@
   var G = 32;
   var OUTLINE = '#2A2A33';
 
-  var SKIN  = ['#F6D7BE', '#EDC5A4', '#DCA97F', '#C08B5E', '#9C6B44', '#7A4F31', '#5C3A24'];
-  var HAIR  = ['#2B2118', '#4A3222', '#6F4526', '#A9743A', '#D6B276', '#E8DFCF', '#8A3F33',
-               '#3B4A7A', '#6B4C8F', '#2F7A6B', '#B4495F', '#4A4F5A', '#C86F3F', '#8FA6C4'];
-  var WEAR  = ['#5B5BD6', '#7E6BE0', '#A9C8F0', '#C9A9F0', '#A8DFC1', '#F2B8A2',
-               '#E8E4DC', '#3A3A46', '#6E8FA8', '#C25F4E', '#D8C38A', '#4E7A63'];
-  var LEGS  = ['#2F3340', '#3F4A63', '#5A4A3C', '#454A52', '#6A5B75', '#2B3A34'];
-  var SHOE  = ['#23242C', '#C25F4E', '#EDEAE2', '#5B5BD6', '#6E6A60'];
-  var TRIM  = ['#2A2A33', '#5B5BD6', '#C25F4E', '#D8C38A', '#A8DFC1', '#C9A9F0', '#E8E4DC'];
+  // Weighted: the lighter and mid tones repeat, so a wall of 60 characters
+  // reads varied instead of being split evenly across seven extremes.
+  var SKIN  = ['#FBE3CC', '#FBE3CC', '#F6D7BE', '#F6D7BE', '#F6D7BE', '#EDC5A4', '#EDC5A4',
+               '#E0AC7E', '#E0AC7E', '#C08B5E', '#9C6B44', '#7A4F31'];
+
+  // Natural tones, weighted the way a room of students actually looks,
+  // with two dyed heads at the end for variety.
+  var HAIR  = ['#1F1913', '#1F1913', '#2B2118', '#2B2118', '#3E2C1E', '#3E2C1E',
+               '#54381F', '#54381F', '#6F4526', '#6F4526', '#8A5A2B', '#A9743A',
+               '#C79A4F', '#D9B677', '#E6D3A8', '#B5563A', '#9A9187', '#C98BA6'];
+
+  // Whole outfits rather than three independent random colours — this is what
+  // stops the cast looking like a paint chart.
+  var OUTFITS = [
+    { wear: '#FF6B5A', legs: '#2C3550', shoe: '#F5F2EA' },   // coral
+    { wear: '#FFC93C', legs: '#2A2E3A', shoe: '#2A2E36' },   // sunflower
+    { wear: '#3FBF7F', legs: '#2C3550', shoe: '#F5F2EA' },   // grass
+    { wear: '#4EA8F0', legs: '#26303F', shoe: '#F0463C' },   // sky
+    { wear: '#7B61FF', legs: '#2A2E3A', shoe: '#F5F2EA' },   // violet
+    { wear: '#FF7BAC', legs: '#3A63C9', shoe: '#F5F2EA' },   // pink + denim
+    { wear: '#2FC4C4', legs: '#2C3550', shoe: '#FFC93C' },   // teal
+    { wear: '#FF8A3D', legs: '#2A2E3A', shoe: '#F5F2EA' },   // tangerine
+    { wear: '#A8D84A', legs: '#334155', shoe: '#2A2E36' },   // lime
+    { wear: '#3355EE', legs: '#26303F', shoe: '#F5F2EA' },   // cobalt
+    { wear: '#D94BC9', legs: '#2A2E3A', shoe: '#F5F2EA' },   // magenta
+    { wear: '#5FE3B0', legs: '#3A63C9', shoe: '#2A2E36' },   // mint + denim
+    { wear: '#F0463C', legs: '#2C3550', shoe: '#FFC93C' },   // red
+    { wear: '#8AA0FF', legs: '#2A2E3A', shoe: '#FF6B5A' },   // periwinkle
+    { wear: '#FFE05C', legs: '#3A63C9', shoe: '#F5F2EA' },   // lemon + denim
+    { wear: '#F5F2EA', legs: '#3355EE', shoe: '#FF6B5A' }    // white + electric blue
+  ];
+
+  var NEUTRAL_TRIM = ['#2A2A33', '#3E3A34', '#E8E4DC', '#C4BDB1', '#6E6A60'];
 
   var HAIR_STYLES = ['short', 'bob', 'long', 'ponytail', 'curls', 'crop', 'wave', 'bun', 'braids'];
-  var EXTRAS = ['none', 'none', 'none', 'glasses', 'roundGlasses', 'headphones', 'beanie',
-                'cap', 'scarf', 'earrings', 'collar'];
+  var EXTRAS = ['none', 'none', 'none', 'none', 'glasses', 'roundGlasses', 'headphones',
+                'beanie', 'cap', 'scarf', 'earrings', 'collar'];
+  var FACES  = ['smile', 'smile', 'grin', 'soft', 'neutral', 'happy', 'wink'];
 
   /* 60 quiet one-word handles. Placeholder set — easy to swap. */
   var HANDLES = ['Aurora','Atlas','Harbour','Lantern','Compass','Ember','Meridian','Cove','Beacon','Cinder',
@@ -61,17 +87,21 @@
   }
   function spec(seed) {
     var p = picker(seed);
-    return {
+    var outfit = p(OUTFITS, 'outfit');
+    var s = {
       seed: String(seed),
       skin: p(SKIN, 'skin'),
       hair: p(HAIR, 'hair'),
       hairStyle: p(HAIR_STYLES, 'style'),
-      wear: p(WEAR, 'wear'),
-      legs: p(LEGS, 'legs'),
-      shoe: p(SHOE, 'shoe'),
+      wear: outfit.wear,
+      legs: outfit.legs,
+      shoe: outfit.shoe,
       extra: p(EXTRAS, 'extra'),
-      trim: p(TRIM, 'trim')
+      face: p(FACES, 'face'),
+      trim: p([0, 1, 2], 'trimpick') === 0 ? p(NEUTRAL_TRIM, 'trimn') : null
     };
+    if (!s.trim) s.trim = scale(s.wear, 0.62);
+    return s;
   }
 
   /* ----------------------------- drawing ---------------------------- */
@@ -145,17 +175,58 @@
     box(g, 11, 2, 15, 3, hairLight); // a soft highlight so hair is not a flat block
     box(g, 9, 6, 22, 6, hairDark);
 
-    // face
-    box(g, 11, 8, 13, 8, hairDark);  // brows
-    box(g, 18, 8, 20, 8, hairDark);
-    box(g, EYE.l[0], EYE.l[1], EYE.l[0] + 2, EYE.l[1] + 2, '#FFFFFF');
-    box(g, EYE.r[0], EYE.r[1], EYE.r[0] + 2, EYE.r[1] + 2, '#FFFFFF');
-    box(g, EYE.l[0] + 1, EYE.l[1] + 1, EYE.l[0] + 2, EYE.l[1] + 2, OUTLINE);
-    box(g, EYE.r[0], EYE.r[1] + 1, EYE.r[0] + 1, EYE.r[1] + 2, OUTLINE);
-    box(g, 15, 13, 16, 13, skinShade);                      // nose
-    box(g, 14, 15, 17, 15, scale(s.skin, 0.72));            // mouth
-    box(g, 10, 13, 11, 13, scale(s.skin, 0.94));            // cheeks
-    box(g, 20, 13, 21, 13, scale(s.skin, 0.94));
+    // face — expression varies per character so nobody looks embalmed
+    var lip = scale(s.skin, 0.62);
+    var blush = scale(s.skin, 0.9);
+    var f = s.face;
+
+    if (f === 'happy') {                       // closed, smiling eyes
+      box(g, 11, 11, 11, 11, OUTLINE); box(g, 12, 10, 12, 10, OUTLINE); box(g, 13, 11, 13, 11, OUTLINE);
+      box(g, 18, 11, 18, 11, OUTLINE); box(g, 19, 10, 19, 10, OUTLINE); box(g, 20, 11, 20, 11, OUTLINE);
+    } else {
+      box(g, EYE.l[0], EYE.l[1], EYE.l[0] + 2, EYE.l[1] + 2, '#FFFFFF');
+      box(g, EYE.l[0] + 1, EYE.l[1] + 1, EYE.l[0] + 2, EYE.l[1] + 2, OUTLINE);
+      if (f === 'wink') {
+        box(g, 18, 11, 20, 11, OUTLINE);       // one eye shut
+      } else {
+        box(g, EYE.r[0], EYE.r[1], EYE.r[0] + 2, EYE.r[1] + 2, '#FFFFFF');
+        box(g, EYE.r[0], EYE.r[1] + 1, EYE.r[0] + 1, EYE.r[1] + 2, OUTLINE);
+      }
+    }
+
+    // brows sit a little differently depending on the expression
+    if (f === 'grin' || f === 'happy') {
+      box(g, 11, 7, 13, 7, hairDark); box(g, 18, 7, 20, 7, hairDark);
+    } else if (f === 'wink') {
+      box(g, 11, 8, 13, 8, hairDark); box(g, 18, 7, 20, 7, hairDark);
+    } else {
+      box(g, 11, 8, 13, 8, hairDark); box(g, 18, 8, 20, 8, hairDark);
+    }
+
+    box(g, 15, 13, 16, 13, scale(s.skin, 0.88));           // nose
+
+    switch (f) {
+      case 'grin':
+        box(g, 14, 15, 17, 15, lip); box(g, 15, 16, 16, 16, lip);
+        box(g, 15, 15, 16, 15, '#FFFFFF');
+        break;
+      case 'smile':
+      case 'happy':
+        box(g, 14, 15, 14, 15, lip); box(g, 17, 15, 17, 15, lip); box(g, 15, 16, 16, 16, lip);
+        break;
+      case 'wink':
+        box(g, 15, 15, 17, 15, lip); box(g, 17, 16, 17, 16, lip);
+        break;
+      case 'soft':
+        box(g, 15, 15, 16, 15, lip); box(g, 17, 14, 17, 14, lip);
+        break;
+      default:
+        box(g, 15, 15, 16, 15, lip);
+    }
+
+    if (f === 'smile' || f === 'grin' || f === 'happy') {
+      box(g, 10, 13, 11, 13, blush); box(g, 20, 13, 21, 13, blush);
+    }
 
     // extras
     var t = s.trim;
@@ -300,13 +371,27 @@
     }, { passive: true });
   }
 
-  /** The fixed cast every participant claims from. */
+  /** The fixed cast every participant claims from — an even, designed spread. */
   function catalogue(count) {
     count = count || 60;
     var out = [];
     for (var i = 0; i < count; i++) {
       var handle = HANDLES[i % HANDLES.length] + (i >= HANDLES.length ? ' ' + (Math.floor(i / HANDLES.length) + 1) : '');
-      out.push({ id: 'px' + (i + 1), handle: handle, spec: spec('px' + (i + 1) + ':' + handle) });
+      var outfit = OUTFITS[(i * 7) % OUTFITS.length];
+      var character = {
+        seed: 'px' + (i + 1),
+        skin: SKIN[(i * 5) % SKIN.length],
+        hair: HAIR[(i * 11) % HAIR.length],
+        hairStyle: HAIR_STYLES[(i * 4 + Math.floor(i / 9)) % HAIR_STYLES.length],
+        wear: outfit.wear,
+        legs: outfit.legs,
+        shoe: outfit.shoe,
+        extra: EXTRAS[(i * 5 + 3) % EXTRAS.length],
+        face: FACES[(i * 3 + 1) % FACES.length],
+        trim: null
+      };
+      character.trim = (i % 4 === 0) ? NEUTRAL_TRIM[(i / 4) % NEUTRAL_TRIM.length] : scale(character.wear, 0.62);
+      out.push({ id: 'px' + (i + 1), handle: handle, spec: character });
     }
     return out;
   }
