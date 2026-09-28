@@ -18,10 +18,12 @@
   --text-2:rgba(243,242,238,.64);
   --text-3:rgba(243,242,238,.40);
 
-  --accent:#C8F04B;            /* swap this one value to re-brand */
-  --accent-ink:#10140A;
-  --accent-dim:rgba(200,240,75,.16);
-  --accent-line:rgba(200,240,75,.42);
+  /* The interface is monochrome. The pixel characters carry the colour, and
+     the accent only ever appears at 11px, in a label or a single small chip. */
+  --accent:#E2724A;
+  --accent-ink:#140905;
+  --accent-dim:rgba(226,114,74,.12);
+  --accent-line:rgba(226,114,74,.38);
 
   --display:"Archivo","Helvetica Neue",Arial,sans-serif;
   --body:"Inter","Helvetica Neue",Arial,sans-serif;
@@ -47,8 +49,8 @@ a{color:var(--text)}
 
 /* ------------------------------- type ----------------------------- */
 .display{font-family:var(--display);font-weight:600;letter-spacing:-.035em;line-height:1.0}
-h1.display{font-size:clamp(38px,11vw,68px);margin:0 0 16px}
-h2.display{font-size:clamp(26px,6.5vw,38px);margin:0 0 10px}
+h1.display{font-size:clamp(42px,9.2vw,96px);line-height:.96;margin:0 0 22px}
+h2.display{font-size:clamp(28px,5.2vw,54px);line-height:1.0;margin:0 0 14px}
 h3.display{font-size:19px;margin:0 0 6px;letter-spacing:-.025em}
 .mono,.label{
   font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.18em;
@@ -73,19 +75,20 @@ h3.display{font-size:19px;margin:0 0 6px;letter-spacing:-.025em}
 
 /* slanted, square-cornered buttons */
 .btn{
-  display:block;width:100%;text-align:center;cursor:pointer;border:0;
-  background:var(--accent);color:var(--accent-ink);
-  font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.06em;
-  text-transform:uppercase;padding:16px 22px;
+  display:inline-block;width:auto;text-align:center;cursor:pointer;border:0;
+  background:var(--text);color:var(--bg);
+  font-family:var(--mono);font-weight:500;font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;padding:15px 26px;
   clip-path:polygon(11px 0, 100% 0, calc(100% - 11px) 100%, 0 100%);
   transition:background .2s var(--ease), transform .25s var(--ease), filter .2s var(--ease);
 }
 .btn:hover{filter:brightness(1.08);transform:translateY(-2px)}
 .btn:active{transform:translateY(0) scale(.995)}
 .btn[disabled]{opacity:.3;cursor:not-allowed;transform:none;filter:none}
-.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line-2);clip-path:none}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line-2);clip-path:none;padding:14px 26px}
 .btn.ghost:hover{border-color:var(--text-2);background:rgba(255,255,255,.04)}
-.btn.solid{background:var(--text);color:var(--bg)}
+.btn.solid{background:var(--accent);color:var(--accent-ink)}
+.btn.wide{display:block;width:100%}
 .linkbtn{
   background:none;border:0;cursor:pointer;font-family:var(--mono);font-size:10.5px;
   letter-spacing:.16em;text-transform:uppercase;color:var(--text-3);padding:12px 2px;
@@ -105,7 +108,8 @@ h3.display{font-size:19px;margin:0 0 6px;letter-spacing:-.025em}
 .card.light .label{color:rgba(11,11,14,.5)}
 .card.light .tiny{color:rgba(11,11,14,.6)}
 
-.stack{display:flex;flex-direction:column;gap:16px}
+.stack{display:flex;flex-direction:column;gap:20px}
+.section{padding:clamp(70px,11vh,130px) 0}
 .stack.sm{gap:10px}
 .stack > .tag{align-self:flex-start}
 .row{display:flex;align-items:center;gap:14px}
@@ -171,12 +175,13 @@ label.field > span{display:block;margin-bottom:8px}
 @keyframes drop{to{transform:translateY(112vh) rotate(420deg);opacity:0}}
 
 /* ----------------------------- layout ----------------------------- */
-.wrap{width:min(620px,100%);margin:0 auto;padding:30px 22px 70px}
+.wrap{width:min(1180px,100%);margin:0 auto;padding:0 clamp(22px,5vw,64px) 120px}
+.narrow{width:min(660px,100%)}
 .topbar{
   position:sticky;top:0;z-index:40;background:rgba(11,11,14,.78);
   backdrop-filter:blur(14px);border-bottom:1px solid var(--line);
 }
-.topbar .inner{width:min(620px,100%);margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:14px}
+.topbar .inner{width:min(1180px,100%);margin:0 auto;padding:18px clamp(22px,5vw,64px);display:flex;align-items:center;gap:20px}
 .brand{
   display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;
   font-size:14px;letter-spacing:.02em;text-transform:uppercase;

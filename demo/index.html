@@ -9,20 +9,23 @@
 <link rel="stylesheet" href="assets/ui.css" />
 <style>
   .demo-bar{
-    position:sticky;top:0;z-index:60;background:var(--accent);color:var(--accent-ink);
+    position:sticky;top:0;z-index:60;background:#000;color:var(--text-3);
+    border-bottom:1px solid var(--line);
     font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
   }
-  .demo-bar .inner{width:min(620px,100%);margin:0 auto;padding:7px 22px;display:flex;align-items:center;gap:10px}
+  .demo-bar .inner{width:min(1180px,100%);margin:0 auto;padding:9px clamp(22px,5vw,64px);display:flex;align-items:center;gap:12px}
   .demo-bar button{
-    background:rgba(16,20,10,.16);color:var(--accent-ink);border:0;font-family:var(--mono);
+    background:transparent;color:var(--text-2);border:1px solid var(--line-2);font-family:var(--mono);
     font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;cursor:pointer;
     clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);transition:background .2s var(--ease);
   }
-  .demo-bar button:hover{background:rgba(16,20,10,.3)}
+  .demo-bar button:hover{color:var(--text);border-color:var(--text-3)}
   .topbar{top:29px}
 
-  .hero{padding:28px 0 8px}
-  .hero h1{font-size:clamp(40px,12.5vw,76px)}
+  .hero{min-height:calc(100svh - 190px);display:flex;flex-direction:column;justify-content:center;padding:40px 0}
+  .hero h1{max-width:17ch}
+  .hero p{max-width:46ch}
+  .hero .btn{align-self:flex-start}
 
   .conn{display:flex;align-items:center;gap:15px;padding:15px;background:var(--surface);
         border:1px solid var(--line);transition:border-color .3s var(--ease), transform .3s var(--ease);
@@ -60,9 +63,27 @@
   .who{text-align:center}
 
   .aside{display:none}
+  .toast{
+    position:fixed;right:clamp(16px,4vw,44px);bottom:clamp(16px,4vw,44px);width:min(330px,calc(100vw - 32px));
+    background:rgba(21,21,28,.92);backdrop-filter:blur(12px);border:1px solid var(--line);
+    padding:18px;z-index:50;
+    clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%);
+    animation:toastIn .7s var(--ease) .5s both;
+  }
+  .toast-bar{position:absolute;left:0;top:0;height:2px;width:46%;background:var(--accent)}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   @media (min-width:1180px){
-    .layout{display:grid;grid-template-columns:620px 300px;gap:44px;justify-content:center;align-items:start}
-    .aside{display:block;padding-top:44px;position:sticky;top:120px}
+    .layout{display:block}
+    .aside{display:none}
+  .toast{
+    position:fixed;right:clamp(16px,4vw,44px);bottom:clamp(16px,4vw,44px);width:min(330px,calc(100vw - 32px));
+    background:rgba(21,21,28,.92);backdrop-filter:blur(12px);border:1px solid var(--line);
+    padding:18px;z-index:50;
+    clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%);
+    animation:toastIn .7s var(--ease) .5s both;
+  }
+  .toast-bar{position:absolute;left:0;top:0;height:2px;width:46%;background:var(--accent)}
+  @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   }
 </style>
 </head>
@@ -83,7 +104,7 @@
       <span class="grow"></span>
       <span class="label" id="stepLabel">Task 0 / 3</span>
     </div>
-    <div class="steps" style="width:min(620px,100%);margin:0 auto;padding:0 22px 12px" id="steps">
+    <div class="steps" style="width:min(1180px,100%);margin:0 auto;padding:0 clamp(22px,5vw,64px) 14px" id="steps">
       <span class="step"><i></i></span><span class="step"><i></i></span><span class="step"><i></i></span>
     </div>
   </div>
@@ -112,7 +133,7 @@
 
 <div class="splash" id="splash">
   <span class="label on">Helsinki · 12 March 2027</span>
-  <h1 class="display">TONIGHT YOU<br>MEET THEM</h1>
+  <h1 class="display">Tonight you<br>meet them.</h1>
 </div>
 <div class="confetti" id="confetti"></div>
 
@@ -180,20 +201,19 @@ var S={};
 /* 1 — welcome */
 S.welcome=function(){
   show(
-  '<div class="stack seq hero">'+
-    '<span class="tag on"><span class="dot live"></span> RESTO 2027</span>'+
-    '<h1 class="display">TWO PEOPLE AT RESTO ARE ABOUT TO MEET YOU.</h1>'+
-    '<p class="lead">You won\'t know who they are. They won\'t know who you are. Eight weeks of that, and then Helsinki.</p>'+
-    '<button class="btn" id="go">Create my account</button>'+
-    '<div class="row wrap" style="margin-top:4px">'+
-      '<span class="tag">3 tasks</span><span class="tag">2 connections</span><span class="tag">0 spoilers</span>'+
-    '</div>'+
-    '<hr class="rule" />'+
-    '<div class="row">'+
-      '<div class="px-tile float" style="width:66px;flex:0 0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
-      '<div><span class="label">You are</span>'+
-        '<h3 class="display" style="margin:5px 0 2px">Compass</h3>'+
-        '<span class="tiny">Your real name goes in the vault until the welcome evening.</span></div>'+
+  '<div class="hero seq">'+
+    '<span class="label on" style="margin-bottom:26px">RESTO 2027 &middot; Helsinki</span>'+
+    '<h1 class="display">Two people at RESTO are about to meet you.</h1>'+
+    '<p class="lead">You will not know who they are. They will not know who you are. Eight weeks of that, and then March.</p>'+
+    '<div><button class="btn" id="go">Create my account</button></div>'+
+  '</div>'+
+  '<div class="toast" id="toast">'+
+    '<div class="toast-bar"></div>'+
+    '<div class="spread"><span class="label on">Signed in</span><span class="label">52 days to go</span></div>'+
+    '<div class="row" style="margin-top:14px">'+
+      '<div class="px-tile bare" style="width:52px;flex:0 0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
+      '<div><h3 class="display" style="margin:0 0 2px">Compass</h3>'+
+      '<span class="tiny">Real name sealed until the welcome evening.</span></div>'+
     '</div>'+
   '</div>');
   on('go', S.matching);
@@ -202,7 +222,7 @@ S.welcome=function(){
 /* 2 — matching */
 S.matching=function(){
   show(
-  '<div class="stack center" style="padding-top:64px;align-items:center">'+
+  '<div class="stack center" style="min-height:70svh;justify-content:center;align-items:center">'+
     '<div class="px-tile float" style="width:120px">'+px(THEM.spec,{level:3})+'</div>'+
     '<h2 class="display" id="mt" style="margin-top:32px">Looking for someone</h2>'+
     '<p class="lead" id="ms" style="margin:0">312 people signed up. One of them is yours.</p>'+
@@ -226,9 +246,9 @@ S.matching=function(){
 /* 3 — two connections */
 S.matched=function(){
   show(
-  '<div class="stack seq">'+
+  '<div class="stack seq narrow section">'+
     '<span class="tag on"><span class="dot"></span> Week 2</span>'+
-    '<h1 class="display">YOU PICKED MERIDIAN!</h1>'+
+    '<h1 class="display">You picked Meridian!</h1>'+
     '<p class="lead">And someone picked you. That\'s two people to talk to before March — and neither of them has any idea who you are.</p>'+
     '<div class="conn on">'+
       '<div class="px-tile bare" style="width:58px;flex:0 0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
@@ -251,9 +271,9 @@ S.matched=function(){
 /* 4 — task 1: mutual interests, through chat */
 S.task1=function(){
   show(
-  '<div class="stack seq">'+
+  '<div class="stack seq narrow section">'+
     '<div class="spread"><span class="label on">Task 1 · Week 3</span><span class="label">With Meridian</span></div>'+
-    '<h1 class="display">FIND THREE THINGS YOU BOTH LIKE.</h1>'+
+    '<h1 class="display">Find three things you both like.</h1>'+
     '<p class="lead">Films, food, terrible taste in music — anything, as long as you both actually mean it. Just talk until you get there.</p>'+
     '<div class="card flat" id="chat">'+
       '<div class="bub">so. eight weeks of this and i can\'t even ask your name</div>'+
@@ -292,9 +312,9 @@ S.task1=function(){
 /* 5 — task 2 */
 S.task2=function(){
   show(
-  '<div class="stack seq">'+
+  '<div class="stack seq narrow section">'+
     '<div class="spread"><span class="label on">Task 2 · Week 5</span><span class="label">With Meridian</span></div>'+
-    '<h1 class="display">TWO TRUTHS AND A LIE.</h1>'+
+    '<h1 class="display">Two truths and a lie.</h1>'+
     '<p class="lead">Send three things about yourself. Two true, one invented. See if they can spot it.</p>'+
     '<div class="card stack sm">'+
       '<label class="field"><span class="label">Statement 01</span><input type="text" value="I have broken the same finger three times" /></label>'+
@@ -324,9 +344,9 @@ S.task2=function(){
 /* 6 — task 3 */
 S.task3=function(){
   show(
-  '<div class="stack seq">'+
+  '<div class="stack seq narrow section">'+
     '<div class="spread"><span class="label on">Task 3 · Week 7</span><span class="label">With Meridian</span></div>'+
-    '<h1 class="display">THREE CLUES SO THEY CAN FIND YOU.</h1>'+
+    '<h1 class="display">Three clues so they can find you.</h1>'+
     '<p class="lead">On the night you get about five minutes to spot each other in a room full of people. Be specific.</p>'+
     '<div class="card stack sm">'+
       '<label class="field"><span class="label">Clue 01</span><input type="text" value="Red scarf. I will not take it off all evening" /></label>'+
@@ -362,9 +382,9 @@ S.event=function(){
   splash.classList.add('on');
   setTimeout(function(){ splash.classList.remove('on'); },2300);
   show(
-  '<div class="stack seq">'+
+  '<div class="stack seq narrow section">'+
     '<span class="tag on"><span class="dot live"></span> Welcome evening · Helsinki</span>'+
-    '<h1 class="display">EIGHT WEEKS. ONE QUESTION.</h1>'+
+    '<h1 class="display">Eight weeks. One question.</h1>'+
     '<div id="stage">'+
       '<div class="portrait float">'+px(THEM.spec,{level:3})+'</div>'+
       '<h2 class="display center" style="margin:22px 0 2px">Meridian</h2>'+
@@ -388,7 +408,7 @@ S.event=function(){
         '<div class="card light center pop">'+
           '<span class="label" style="color:rgba(11,11,14,.5)">It was</span>'+
           '<div class="px-tile bare" style="width:150px;margin:14px auto 0">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-          '<h1 class="display" style="margin:18px 0 6px;font-size:46px">ALEX!</h1>'+
+          '<h1 class="display" style="margin:18px 0 6px;font-size:46px">Alex!</h1>'+
           '<p class="small" style="margin:0;color:rgba(11,11,14,.7)">Metropolia UAS · Tourism Management</p>'+
           '<p class="tiny" style="margin:8px 0 0;color:rgba(11,11,14,.55)">Eight weeks as Meridian.</p>'+
         '</div>';
@@ -406,9 +426,9 @@ S.event=function(){
 /* 8 — met */
 S.meet=function(){
   show(
-  '<div class="stack seq">'+
+  '<div class="stack seq narrow section">'+
     '<span class="label on">Helsinki · Welcome evening</span>'+
-    '<h1 class="display">FOUND EACH OTHER!</h1>'+
+    '<h1 class="display">Found each other!</h1>'+
     '<p class="lead">Eight weeks of typing. Four seconds of eye contact.</p>'+
     '<div class="card duo">'+
       '<div class="who"><div class="px-tile bare" style="width:92px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
@@ -441,9 +461,9 @@ S.meet=function(){
 /* 9 — done */
 S.done=function(){
   show(
-  '<div class="stack seq">'+
+  '<div class="stack seq narrow section">'+
     '<span class="tag">Journey complete</span>'+
-    '<h1 class="display">ONE DOWN. ONE STILL WAITING.</h1>'+
+    '<h1 class="display">One down. One still waiting.</h1>'+
     '<p class="lead">Lantern is somewhere in the same room, looking for a person in a red scarf. Fifty-eight strangers after that — which is what the rest of RESTO is for.</p>'+
     '<div class="card duo">'+
       '<div class="who"><div class="px-tile bare" style="width:70px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:8px">Emma</div></div>'+
