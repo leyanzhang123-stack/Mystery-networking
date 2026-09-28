@@ -16,17 +16,20 @@
   var OUTLINE = '#2A2A33';
 
   var SKIN  = ['#F6D7BE', '#EDC5A4', '#DCA97F', '#C08B5E', '#9C6B44', '#7A4F31', '#5C3A24'];
-  var HAIR  = ['#2B2118', '#4A3222', '#6F4526', '#A9743A', '#D6B276', '#E8DFCF', '#8A3F33',
-               '#3B4A7A', '#6B4C8F', '#2F7A6B', '#B4495F', '#4A4F5A', '#C86F3F', '#8FA6C4'];
+  // Natural hair first, with two quiet dyed options at the end.
+  var HAIR  = ['#1F1913', '#2B2118', '#3E2C1E', '#54381F', '#6F4526', '#8A5A2B', '#A9743A',
+               '#C79A४F'.replace('४','4'), '#D9B677', '#E6D3A8', '#B5563A', '#8A3F33',
+               '#9A9187', '#D8D2C6', '#C98BA6', '#8FA6C4'];
   var WEAR  = ['#5B5BD6', '#7E6BE0', '#A9C8F0', '#C9A9F0', '#A8DFC1', '#F2B8A2',
                '#E8E4DC', '#3A3A46', '#6E8FA8', '#C25F4E', '#D8C38A', '#4E7A63'];
   var LEGS  = ['#2F3340', '#3F4A63', '#5A4A3C', '#454A52', '#6A5B75', '#2B3A34'];
   var SHOE  = ['#23242C', '#C25F4E', '#EDEAE2', '#5B5BD6', '#6E6A60'];
-  var TRIM  = ['#2A2A33', '#5B5BD6', '#C25F4E', '#D8C38A', '#A8DFC1', '#C9A9F0', '#E8E4DC'];
+  var NEUTRAL_TRIM = ['#2A2A33', '#3E3A34', '#E8E4DC', '#C4BDB1', '#6E6A60'];
 
   var HAIR_STYLES = ['short', 'bob', 'long', 'ponytail', 'curls', 'crop', 'wave', 'bun', 'braids'];
-  var EXTRAS = ['none', 'none', 'none', 'glasses', 'roundGlasses', 'headphones', 'beanie',
-                'cap', 'scarf', 'earrings', 'collar'];
+  var EXTRAS = ['none', 'none', 'none', 'none', 'glasses', 'roundGlasses', 'headphones',
+                'beanie', 'cap', 'scarf', 'earrings', 'collar'];
+  var FACES  = ['smile', 'smile', 'grin', 'soft', 'neutral', 'happy', 'wink'];
 
   /* 60 quiet one-word handles. Placeholder set — easy to swap. */
   var HANDLES = ['Aurora','Atlas','Harbour','Lantern','Compass','Ember','Meridian','Cove','Beacon','Cinder',
@@ -61,7 +64,7 @@
   }
   function spec(seed) {
     var p = picker(seed);
-    return {
+    var s = {
       seed: String(seed),
       skin: p(SKIN, 'skin'),
       hair: p(HAIR, 'hair'),
@@ -70,8 +73,12 @@
       legs: p(LEGS, 'legs'),
       shoe: p(SHOE, 'shoe'),
       extra: p(EXTRAS, 'extra'),
-      trim: p(TRIM, 'trim')
+      face: p(FACES, 'face'),
+      // accessories borrow the outfit colour or a neutral, so nothing clashes
+      trim: p([0, 1, 2], 'trimpick') === 0 ? p(NEUTRAL_TRIM, 'trimn') : null
     };
+    if (!s.trim) s.trim = scale(s.wear, 0.62);
+    return s;
   }
 
   /* ----------------------------- drawing ---------------------------- */
@@ -145,17 +152,58 @@
     box(g, 11, 2, 15, 3, hairLight); // a soft highlight so hair is not a flat block
     box(g, 9, 6, 22, 6, hairDark);
 
-    // face
-    box(g, 11, 8, 13, 8, hairDark);  // brows
-    box(g, 18, 8, 20, 8, hairDark);
-    box(g, EYE.l[0], EYE.l[1], EYE.l[0] + 2, EYE.l[1] + 2, '#FFFFFF');
-    box(g, EYE.r[0], EYE.r[1], EYE.r[0] + 2, EYE.r[1] + 2, '#FFFFFF');
-    box(g, EYE.l[0] + 1, EYE.l[1] + 1, EYE.l[0] + 2, EYE.l[1] + 2, OUTLINE);
-    box(g, EYE.r[0], EYE.r[1] + 1, EYE.r[0] + 1, EYE.r[1] + 2, OUTLINE);
-    box(g, 15, 13, 16, 13, skinShade);                      // nose
-    box(g, 14, 15, 17, 15, scale(s.skin, 0.72));            // mouth
-    box(g, 10, 13, 11, 13, scale(s.skin, 0.94));            // cheeks
-    box(g, 20, 13, 21, 13, scale(s.skin, 0.94));
+    // face — expression varies per character so nobody looks embalmed
+    var lip = scale(s.skin, 0.62);
+    var blush = scale(s.skin, 0.9);
+    var f = s.face;
+
+    if (f === 'happy') {                       // closed, smiling eyes
+      box(g, 11, 11, 11, 11, OUTLINE); box(g, 12, 10, 12, 10, OUTLINE); box(g, 13, 11, 13, 11, OUTLINE);
+      box(g, 18, 11, 18, 11, OUTLINE); box(g, 19, 10, 19, 10, OUTLINE); box(g, 20, 11, 20, 11, OUTLINE);
+    } else {
+      box(g, EYE.l[0], EYE.l[1], EYE.l[0] + 2, EYE.l[1] + 2, '#FFFFFF');
+      box(g, EYE.l[0] + 1, EYE.l[1] + 1, EYE.l[0] + 2, EYE.l[1] + 2, OUTLINE);
+      if (f === 'wink') {
+        box(g, 18, 11, 20, 11, OUTLINE);       // one eye shut
+      } else {
+        box(g, EYE.r[0], EYE.r[1], EYE.r[0] + 2, EYE.r[1] + 2, '#FFFFFF');
+        box(g, EYE.r[0], EYE.r[1] + 1, EYE.r[0] + 1, EYE.r[1] + 2, OUTLINE);
+      }
+    }
+
+    // brows sit a little differently depending on the expression
+    if (f === 'grin' || f === 'happy') {
+      box(g, 11, 7, 13, 7, hairDark); box(g, 18, 7, 20, 7, hairDark);
+    } else if (f === 'wink') {
+      box(g, 11, 8, 13, 8, hairDark); box(g, 18, 7, 20, 7, hairDark);
+    } else {
+      box(g, 11, 8, 13, 8, hairDark); box(g, 18, 8, 20, 8, hairDark);
+    }
+
+    box(g, 15, 13, 16, 13, scale(s.skin, 0.88));           // nose
+
+    switch (f) {
+      case 'grin':
+        box(g, 14, 15, 17, 15, lip); box(g, 15, 16, 16, 16, lip);
+        box(g, 15, 15, 16, 15, '#FFFFFF');
+        break;
+      case 'smile':
+      case 'happy':
+        box(g, 14, 15, 14, 15, lip); box(g, 17, 15, 17, 15, lip); box(g, 15, 16, 16, 16, lip);
+        break;
+      case 'wink':
+        box(g, 15, 15, 17, 15, lip); box(g, 17, 16, 17, 16, lip);
+        break;
+      case 'soft':
+        box(g, 15, 15, 16, 15, lip); box(g, 17, 14, 17, 14, lip);
+        break;
+      default:
+        box(g, 15, 15, 16, 15, lip);
+    }
+
+    if (f === 'smile' || f === 'grin' || f === 'happy') {
+      box(g, 10, 13, 11, 13, blush); box(g, 20, 13, 21, 13, blush);
+    }
 
     // extras
     var t = s.trim;
