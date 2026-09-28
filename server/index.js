@@ -104,8 +104,8 @@ function taskDefs(settings) {
     {
       week: 3,
       key: 'mutual_interests',
-      title: 'Mystery Task 1 — Three things in common',
-      intro: 'Chat with your mystery connection and agree on at least three things you genuinely have in common. No names, no university, no photos — stay mysterious.',
+      title: 'Find three things you both like',
+      intro: 'Talk until you find three things you genuinely have in common. Films, food, terrible taste in music, anything at all, as long as you both mean it. Write the three down here when you get there.',
       kind: 'list',
       count: 3,
       placeholder: 'e.g. We both love live music'
@@ -113,19 +113,19 @@ function taskDefs(settings) {
     {
       week: 5,
       key: 'week5',
-      title: 'Mystery Task 2 — ' + settings.week5_title,
+      title: settings.week5_title,
       intro: settings.week5_intro,
       kind: 'text',
-      placeholder: 'Write your answer here…'
+      placeholder: 'Write your answer here'
     },
     {
       week: 7,
       key: 'clues',
-      title: 'Mystery Task 3 — Three clues to find me',
-      intro: 'Leave three clues so your connection can spot you within five minutes at the live event: how you look, your height, what you will be wearing, where you will be standing.',
+      title: 'Three clues so they can find you',
+      intro: 'On the night you get about five minutes to spot each other in a room full of people. Be specific: what you will be wearing, how tall you are, where you will be standing. Not useful: I have brown hair.',
       kind: 'list',
       count: 3,
-      placeholder: 'e.g. I will be wearing a red scarf'
+      placeholder: 'e.g. Red scarf, on all evening'
     }
   ];
 }

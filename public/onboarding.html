@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Set up · Mystery Networking</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23FCFCFB'/><rect x='3' y='6' width='3' height='3' fill='%230E0E12'/><rect x='10' y='6' width='3' height='3' fill='%238B5CF6'/></svg>" />
+<link rel="stylesheet" href="/assets/ui.css" />
+</head>
+<body>
+<script src="/assets/pixel.js"></script>
+<script src="/assets/grain.js"></script>
+<script src="/assets/motion.js"></script>
+<script src="/assets/app.js"></script>
+<style>
+  .screen{min-height:calc(100svh - 150px);display:flex;flex-direction:column;padding:26px 0 34px}
+  .screen .spacer{flex:1;min-height:18px}
+  .preview{display:flex;align-items:center;gap:16px}
+  .preview .px-tile{width:88px;flex:0 0 auto}
+</style>
+<script>
+(async function(){
+  const s = await APP.guard('onboarding'); if(!s) return;
+  const view = APP.shell({ right: 'Set up' });
+  const me = s.user;
+  let avatars = [], chosen = me.avatar ? me.avatar.id : null, photo = me.realPhoto || '';
+
+  try { avatars = (await APP.api('/api/avatars')).avatars; }
+  catch (e) { APP.toast(e.message); }
+
+  const byId = id => avatars.find(a => a.id === id);
+
+  function stepCharacter(){
+    APP.render(
+      '<div class="screen">'+
+        '<span class="label on" data-rise>Step 1 of 2</span>'+
+        '<h1 class="display" style="margin-top:18px">Pick who you will be until <span class="serif">Helsinki.</span></h1>'+
+        '<p class="lead" data-rise="360">This is all anyone sees for the next eight weeks. One character per person, first come first served.</p>'+
+        '<div class="tile-grid" id="grid" data-rise="420"></div>'+
+        '<div class="spacer"></div>'+
+        '<button class="btn wide" id="next" '+(chosen?'':'disabled')+'>Continue</button>'+
+      '</div>', function(){
+        const grid = document.getElementById('grid');
+        grid.innerHTML = avatars.map(a =>
+          '<div class="tile'+(a.taken?' gone':'')+(a.id===chosen?' sel':'')+'" data-id="'+a.id+'">'+
+            PIXEL.svg(a.spec,{level:3, googly:!a.taken})+
+            '<span class="nm">'+APP.escape(a.handle)+'</span></div>').join('');
+        grid.onclick = (e) => {
+          const tile = e.target.closest('.tile');
+          if (!tile || tile.classList.contains('gone')) return;
+          chosen = tile.dataset.id;
+          grid.querySelectorAll('.tile').forEach(t => t.classList.toggle('sel', t.dataset.id === chosen));
+          document.getElementById('next').disabled = false;
+        };
+        document.getElementById('next').onclick = stepDetails;
+      });
+  }
+
+  function stepDetails(){
+    const a = byId(chosen);
+    APP.render(
+      '<div class="screen">'+
+        '<span class="label on" data-rise>Step 2 of 2</span>'+
+        '<h1 class="display" style="margin-top:18px">Now the part <span class="serif">nobody sees.</span></h1>'+
+        '<p class="lead" data-rise="360">Your real name and photo stay sealed until the welcome evening. We only need them so people can actually find each other on the night.</p>'+
+        '<div class="card preview" data-rise="400">'+
+          '<div class="px-tile">'+PIXEL.svg(a.spec,{level:3,googly:true})+'</div>'+
+          '<div><span class="label">Your character</span>'+
+          '<h3 class="display" style="margin:4px 0 0">'+APP.escape(a.handle)+'</h3>'+
+          '<button class="linkbtn" id="back" style="padding-left:0">Change</button></div>'+
+        '</div>'+
+        '<div class="stack sm" style="margin-top:18px" data-rise="440">'+
+          '<label class="field"><span class="label">Mystery name · everyone sees this</span>'+
+            '<input type="text" id="alias" maxlength="24" value="'+APP.escape(me.alias || a.handle)+'" /></label>'+
+          '<label class="field"><span class="label">Real name · sealed</span>'+
+            '<input type="text" id="realName" maxlength="60" value="'+APP.escape(me.realName || '')+'" placeholder="Emma Virtanen" /></label>'+
+          '<label class="field"><span class="label">Photo · sealed</span>'+
+            '<input type="file" id="file" accept="image/*" /></label>'+
+          '<div id="shot"></div>'+
+        '</div>'+
+        '<div class="spacer"></div>'+
+        '<button class="btn wide" id="save">Save and continue</button>'+
+      '</div>', function(){
+        document.getElementById('back').onclick = stepCharacter;
+        const shot = document.getElementById('shot');
+        const showShot = () => { shot.innerHTML = photo
+          ? '<div class="row"><img class="photo" src="'+photo+'" alt="" /><span class="tiny">Stored, hidden until the reveal.</span></div>' : ''; };
+        showShot();
+        document.getElementById('file').onchange = async (e) => {
+          try { photo = await APP.readPhoto(e.target.files[0], 640); showShot(); }
+          catch (err) { APP.toast(err.message); }
+        };
+        const save = document.getElementById('save');
+        save.onclick = async () => {
+          save.disabled = true;
+          try {
+            await APP.api('/api/profile', {
+              avatarId: chosen,
+              alias: document.getElementById('alias').value,
+              realName: document.getElementById('realName').value,
+              realPhoto: photo
+            });
+            APP.confetti(40);
+            setTimeout(() => location.href = '/hub.html', 500);
+          } catch (err) { APP.toast(err.message); save.disabled = false; }
+        };
+      });
+  }
+
+  if (chosen) stepDetails(); else stepCharacter();
+})();
+</script>
+</body></html>

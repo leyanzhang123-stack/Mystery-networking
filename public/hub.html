@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Your journey · Mystery Networking</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23FCFCFB'/><rect x='3' y='6' width='3' height='3' fill='%230E0E12'/><rect x='10' y='6' width='3' height='3' fill='%238B5CF6'/></svg>" />
+<link rel="stylesheet" href="/assets/ui.css" />
+</head>
+<body>
+<script src="/assets/pixel.js"></script>
+<script src="/assets/grain.js"></script>
+<script src="/assets/motion.js"></script>
+<script src="/assets/app.js"></script>
+<style>
+  .screen{min-height:calc(100svh - 176px);display:flex;flex-direction:column;padding:24px 0 34px}
+  .screen .spacer{flex:1;min-height:16px}
+  .conn{display:flex;align-items:center;gap:14px;padding:14px;background:var(--paper-2);border:1px solid var(--line);
+        border-radius:3px;cursor:pointer;text-decoration:none;color:inherit;
+        transition:transform .4s var(--ease), border-color .3s var(--ease)}
+  .conn:hover{transform:translateX(5px);border-color:var(--line-2)}
+</style>
+<script>
+(async function(){
+  const s = await APP.guard('hub'); if(!s) return;
+  const view = APP.shell({ right: 'Week ' + s.settings.currentWeek, steps: true });
+  const me = s.user, settings = s.settings, defs = s.tasks;
+
+  let data;
+  try { data = await APP.api('/api/connections'); }
+  catch (e) { APP.toast(e.message); return; }
+
+  const conns = data.connections;
+  const openWeeks = defs.filter(d => settings.currentWeek >= d.week);
+  // a mission counts as done when it is answered on every connection you have
+  const doneCount = openWeeks.filter(d =>
+    conns.length > 0 && conns.every(c => (c.tasks.find(t => t.week === d.week) || {}).mine)).length;
+  APP.steps(doneCount);
+
+  const stamps = [
+    { ic: '01', t: 'Signed up', got: true },
+    { ic: '02', t: 'Matched', got: conns.length > 0 },
+    { ic: '03', t: 'Common ground', got: isDone(3) },
+    { ic: '04', t: 'Called the lie', got: isDone(5) },
+    { ic: '05', t: 'Clues sent', got: isDone(7) },
+    { ic: '★', t: 'Met in person', got: settings.revealPublished }
+  ];
+  function isDone(week){
+    return conns.length > 0 && conns.every(c => (c.tasks.find(t => t.week === week) || {}).mine);
+  }
+
+  function connRow(c){
+    const peer = c.peer;
+    const pending = defs.filter(d => settings.currentWeek >= d.week)
+      .filter(d => !(c.tasks.find(t => t.week === d.week) || {}).mine).length;
+    return '<a class="conn" href="/chat.html?c='+c.id+'">'+
+      '<div class="px-tile bare" style="width:56px;flex:0 0 auto">'+APP.avatar(peer.avatar)+'</div>'+
+      '<div class="grow"><h3 class="display" style="margin:0">'+APP.escape(peer.alias)+'</h3>'+
+      '<span class="label">'+(c.youPicked ? 'You picked them' : 'They picked you')+'</span></div>'+
+      (pending ? '<span class="label on">'+pending+' to do</span>' : '<span class="label">Open</span>')+
+    '</a>';
+  }
+
+  function missionRow(d){
+    const open = settings.currentWeek >= d.week;
+    const done = isDone(d.week);
+    return '<div class="mission'+(done?' done':'')+'">'+
+      '<span class="box">'+(done ? '&#10003;' : (open ? '·' : '&#183;'))+'</span>'+
+      '<span class="grow"><span class="m-title">'+APP.escape(d.title)+'</span></span>'+
+      '<span class="label">'+(open ? 'Week '+d.week : 'Week '+d.week)+'</span></div>';
+  }
+
+  const pct = Math.round((doneCount / 3) * 100);
+
+  APP.render(
+    '<div class="screen">'+
+      '<div class="row" data-rise>'+
+        '<div class="px-tile" style="width:70px;flex:0 0 auto">'+APP.avatar(me.avatar)+'</div>'+
+        '<div class="grow"><span class="label">You are</span>'+
+        '<h3 class="display" style="margin:3px 0 0">'+APP.escape(me.alias)+'</h3></div>'+
+        '<button class="linkbtn" id="out">Sign out</button>'+
+      '</div>'+
+
+      (conns.length === 0
+        ? (settings.pickingOpen
+            ? '<div class="card on" style="margin-top:22px" data-rise="280">'+
+                '<span class="label on">Week 2</span>'+
+                '<h2 class="display" style="margin:10px 0 8px">Time to <span class="serif">pick someone.</span></h2>'+
+                '<p class="small" style="margin:0 0 16px">One pick each, and you can be picked once. If someone has gone, someone got there first.</p>'+
+                '<a class="btn wide" href="/pick.html" style="text-decoration:none">Open the wall</a></div>'
+            : '<div class="card quiet" style="margin-top:22px" data-rise="280">'+
+                '<span class="label">Waiting</span>'+
+                '<h2 class="display" style="margin:10px 0 8px">Nothing to do <span class="serif">yet.</span></h2>'+
+                '<p class="small" style="margin:0">Picking opens in week 2. You will get an email when it does.</p></div>')
+        : '<div style="margin-top:22px" data-rise="280">'+
+            '<span class="label" style="display:block;margin-bottom:10px">Your connections</span>'+
+            '<div class="stack sm">'+conns.map(connRow).join('')+'</div></div>')+
+
+      '<div class="card" style="margin-top:22px" data-rise="360">'+
+        '<div class="meter" style="margin-bottom:20px">'+
+          '<div class="ring-wrap" data-pct="'+(doneCount/3)+'"><svg class="ring" viewBox="0 0 60 60">'+
+            '<circle class="ring-bg" cx="30" cy="30" r="26"></circle>'+
+            '<circle class="ring-fill" cx="30" cy="30" r="26"></circle></svg>'+
+            '<span class="ring-label">'+pct+'%</span></div>'+
+          '<div><h3 class="display" style="margin:0 0 2px">'+(doneCount===3?'Ready for Helsinki':'Missions')+'</h3>'+
+          '<span class="tiny">'+conns.length+' connection'+(conns.length===1?'':'s')+' · week '+settings.currentWeek+' of 8</span></div>'+
+        '</div>'+
+        defs.map(missionRow).join('')+
+        '<hr class="rule" style="margin:16px 0 12px" />'+
+        '<span class="label" style="display:block;margin-bottom:10px">Stamps</span>'+
+        '<div class="rewards">'+stamps.map(r =>
+          '<div class="reward'+(r.got?' got':'')+'"><span class="ic">'+(r.got?r.ic:'&#183;')+'</span><span>'+r.t+'</span></div>').join('')+
+        '</div>'+
+      '</div>'+
+
+      (settings.revealPublished
+        ? '<a class="btn wide" href="/reveal.html" style="margin-top:20px;text-decoration:none" data-rise="420">See who everyone was</a>'
+        : '<div class="note" style="margin-top:20px" data-rise="420"><b>House rule</b>No names, no schools, no photos. If it slips out, you have spoiled your own reveal.</div>')+
+
+      (me.isAdmin ? '<div style="margin-top:16px" data-rise="460"><a class="linkbtn" href="/admin.html">Organiser console</a></div>' : '')+
+    '</div>', function(){
+      document.getElementById('out').onclick = async () => {
+        await APP.api('/api/logout', {}); location.href = '/';
+      };
+    });
+})();
+</script>
+</body></html>

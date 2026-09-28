@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Organiser · Mystery Networking</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23FCFCFB'/><rect x='3' y='6' width='3' height='3' fill='%230E0E12'/><rect x='10' y='6' width='3' height='3' fill='%238B5CF6'/></svg>" />
+<link rel="stylesheet" href="/assets/ui.css" />
+</head>
+<body>
+<script src="/assets/pixel.js"></script>
+<script src="/assets/grain.js"></script>
+<script src="/assets/motion.js"></script>
+<script src="/assets/app.js"></script>
+<style>
+  @media (min-width:1040px){ .wrap{width:min(1080px,100%) !important;border:0 !important;background:none !important} }
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  @media (min-width:760px){ .grid.two{grid-template-columns:1fr 1fr} }
+  .stat{background:var(--paper-2);border:1px solid var(--line);border-radius:3px;padding:14px}
+  .stat b{display:block;font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:-.03em;line-height:1}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+</style>
+<script>
+(async function(){
+  const s = await APP.guard('admin'); if(!s) return;
+  APP.shell({ right: 'Organiser' });
+
+  async function load(){
+    const d = await APP.api('/api/admin/overview');
+    draw(d);
+  }
+
+  function draw(d){
+    const st = d.settings, k = d.stats;
+    APP.render(
+      '<div style="padding:24px 0 60px">'+
+        '<span class="label on" data-rise>Organiser console</span>'+
+        '<h1 class="display" style="margin-top:16px">Run the <span class="serif">whole thing.</span></h1>'+
+
+        '<div class="stats" style="margin:22px 0" data-rise="260">'+
+          stat('Participants', k.users)+ stat('Profiles done', k.profilesDone)+
+          stat('Connections', k.connections)+ stat('Picked', k.picked)+
+          stat('Auto-matched', k.auto)+ stat('Messages', k.messages)+
+        '</div>'+
+
+        '<div class="grid two">'+
+          '<div class="card" data-rise="300">'+
+            '<span class="label">Event controls</span>'+
+            '<h3 class="display" style="margin:10px 0 6px">Where everyone is</h3>'+
+            '<label class="field" style="margin-top:12px"><span class="label">Current week</span>'+
+              '<select id="week">'+[1,2,3,4,5,6,7,8].map(w =>
+                '<option value="'+w+'"'+(Number(st.current_week)===w?' selected':'')+'>Week '+w+
+                (w===2?' · picking':'')+(w===3?' · mission 1':'')+(w===5?' · mission 2':'')+(w===7?' · mission 3':'')+
+                '</option>').join('')+'</select></label>'+
+            '<div class="switch"><div><b style="font-weight:600">Picking open</b>'+
+              '<div class="tiny">'+k.waitingToPick+' have not picked · '+k.notYetPicked+' not yet picked</div></div>'+
+              '<button class="btn sm" id="picking">'+(st.picking_open==='1'?'On':'Off')+'</button></div>'+
+            '<div class="switch"><div><b style="font-weight:600">Reveal published</b>'+
+              '<div class="tiny">Shows every real name and photo on /reveal.html</div></div>'+
+              '<button class="btn sm" id="reveal">'+(st.reveal_published==='1'?'Live':'Sealed')+'</button></div>'+
+            '<div class="switch"><div><b style="font-weight:600">Auto-match the rest</b>'+
+              '<div class="tiny">Pairs everyone still without a connection</div></div>'+
+              '<button class="btn sm ghost" id="auto">Run</button></div>'+
+          '</div>'+
+
+          '<div class="card" data-rise="340">'+
+            '<span class="label">Mission 2 · week 5</span>'+
+            '<h3 class="display" style="margin:10px 0 6px">Editable at any time</h3>'+
+            '<label class="field" style="margin-top:12px"><span class="label">Title</span>'+
+              '<input type="text" id="w5t" value="'+APP.escape(st.week5_title)+'" /></label>'+
+            '<label class="field" style="margin-top:10px"><span class="label">Instructions</span>'+
+              '<textarea id="w5i" rows="4">'+APP.escape(st.week5_intro)+'</textarea></label>'+
+            '<button class="btn wide" id="savew5" style="margin-top:12px">Save mission 2</button>'+
+          '</div>'+
+        '</div>'+
+
+        '<div class="card" style="margin-top:16px" data-rise="380">'+
+          '<span class="label">Connections</span>'+
+          '<div class="scroller"><table class="data" style="margin-top:10px"><thead><tr>'+
+            '<th>#</th><th>Chooser</th><th>Chosen</th><th>How</th><th>Msgs</th><th>Answers</th></tr></thead><tbody>'+
+            (d.connections.length ? d.connections.map(c =>
+              '<tr><td>'+c.id+'</td><td>'+APP.escape(c.chooser)+'</td><td>'+APP.escape(c.chosen)+'</td>'+
+              '<td>'+c.source+'</td><td>'+c.messages+'</td><td>'+c.submissions+'</td></tr>').join('')
+              : '<tr><td colspan="6" class="tiny">Nobody has picked yet.</td></tr>')+
+          '</tbody></table></div>'+
+        '</div>'+
+
+        '<div class="card" style="margin-top:16px" data-rise="420">'+
+          '<span class="label">Participants</span>'+
+          '<div class="scroller"><table class="data" style="margin-top:10px"><thead><tr>'+
+            '<th></th><th>Mystery name</th><th>Real name</th><th>Email</th><th>Photo</th><th>Links</th></tr></thead><tbody>'+
+            d.participants.map(p =>
+              '<tr><td style="width:40px">'+(p.avatar ? '<div style="width:32px">'+PIXEL.svg(p.avatar.spec,{level:3})+'</div>' : '')+'</td>'+
+              '<td>'+APP.escape(p.alias || '—')+(p.isAdmin?' <span class="label on">admin</span>':'')+'</td>'+
+              '<td>'+APP.escape(p.realName || '—')+'</td>'+
+              '<td class="tiny">'+APP.escape(p.email)+'</td>'+
+              '<td>'+(p.hasPhoto ? 'yes' : '<span class="tiny">no</span>')+'</td>'+
+              '<td>'+p.connections+'</td></tr>').join('')+
+          '</tbody></table></div>'+
+        '</div>'+
+
+        '<div class="row" style="margin-top:20px;gap:14px" data-rise="460">'+
+          '<a class="linkbtn" href="/hub.html">Back to my journey</a>'+
+          '<a class="linkbtn" href="/reveal.html">Open the reveal wall</a>'+
+          '<a class="linkbtn" href="/demo">Open the demo</a>'+
+        '</div>'+
+      '</div>', function(){
+        const set = async (key, value) => {
+          try { await APP.api('/api/admin/setting', { key, value }); APP.toast('Saved', 'ok'); load(); }
+          catch (e) { APP.toast(e.message); }
+        };
+        document.getElementById('week').onchange = (e) => set('current_week', e.target.value);
+        document.getElementById('picking').onclick = () => set('picking_open', st.picking_open==='1' ? '0' : '1');
+        document.getElementById('reveal').onclick = () => {
+          if (st.reveal_published === '1' || confirm('Publish the reveal? Every real name and photo becomes visible to everyone.')) {
+            set('reveal_published', st.reveal_published==='1' ? '0' : '1');
+          }
+        };
+        document.getElementById('auto').onclick = async () => {
+          if (!confirm('Pair everyone who is still unmatched? This cannot be undone.')) return;
+          try { const r = await APP.api('/api/admin/automatch', {}); APP.toast(r.made+' new connections made', 'ok'); load(); }
+          catch (e) { APP.toast(e.message); }
+        };
+        document.getElementById('savew5').onclick = async () => {
+          try {
+            await APP.api('/api/admin/setting', { key:'week5_title', value: document.getElementById('w5t').value });
+            await APP.api('/api/admin/setting', { key:'week5_intro', value: document.getElementById('w5i').value });
+            APP.toast('Mission 2 saved', 'ok'); load();
+          } catch (e) { APP.toast(e.message); }
+        };
+      });
+  }
+  const stat = (t,v) => '<div class="stat"><b>'+v+'</b><span class="label">'+t+'</span></div>';
+  load().catch(e => APP.toast(e.message));
+})();
+</script>
+</body></html>
