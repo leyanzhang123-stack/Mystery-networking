@@ -1,0 +1,198 @@
+/* ==================================================================
+   Mystery Networking — design system
+   Cream paper, hard ink outlines, sticker labels, pixel display type.
+   Shared by the live site and the presentation demo.
+   ================================================================== */
+@import url('fonts.css');
+
+:root{
+  /* paper + ink */
+  --cream:#FBF3E4;
+  --cream-2:#FFFCF5;
+  --cream-3:#F5E9D2;
+  --ink:#1E2430;
+  --ink-soft:#5A6473;
+  --line:#1E2430;
+
+  /* the cookie-tin palette */
+  --blue:#3E9BE9;
+  --blue-deep:#1F6FB8;
+  --yellow:#F5C63A;
+  --pink:#E86AB4;
+  --orange:#F07C2C;
+  --teal:#5FC9C9;
+  --violet:#7C6BE8;
+  --green:#4CAF6B;
+  --red:#E4574C;
+
+  --radius:14px;
+  --radius-sm:9px;
+  --radius-lg:20px;
+  --pop:4px 4px 0 var(--ink);
+  --pop-sm:3px 3px 0 var(--ink);
+  --pop-lg:7px 7px 0 var(--ink);
+
+  --display:"Pixelify Sans","Courier New",monospace;
+  --label:"Silkscreen","Courier New",monospace;
+  --body:"DM Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;font-family:var(--body);color:var(--ink);background:var(--cream);
+  font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+a{color:var(--blue-deep)}
+
+/* ------------------------------ type ------------------------------ */
+.display{font-family:var(--display);font-weight:700;line-height:1.02;letter-spacing:.01em}
+h1.display{font-size:clamp(30px,8vw,42px);margin:0 0 10px}
+h2.display{font-size:clamp(23px,6vw,30px);margin:0 0 8px}
+h3.display{font-size:19px;margin:0 0 6px}
+.label{font-family:var(--label);font-size:10px;letter-spacing:.09em;text-transform:uppercase}
+.muted{color:var(--ink-soft)}
+.lead{font-size:16px;line-height:1.55;margin:0 0 16px}
+.small{font-size:13px;line-height:1.5}
+.tiny{font-size:11.5px;line-height:1.45}
+
+/* ---------------------------- stickers ---------------------------- */
+.sticker{
+  display:inline-block;padding:6px 11px;border:2px solid var(--ink);border-radius:var(--radius-sm);
+  background:var(--yellow);box-shadow:var(--pop-sm);font-family:var(--label);font-size:10px;
+  letter-spacing:.08em;text-transform:uppercase;transform:rotate(-2deg);white-space:nowrap;
+}
+.sticker.blue{background:var(--blue);color:#fff}
+.sticker.pink{background:var(--pink);color:#fff}
+.sticker.orange{background:var(--orange);color:#fff}
+.sticker.teal{background:var(--teal)}
+.sticker.violet{background:var(--violet);color:#fff}
+.sticker.green{background:var(--green);color:#fff}
+.sticker.cream{background:var(--cream-2)}
+.sticker.flat{transform:none}
+.sticker.tilt-r{transform:rotate(2.5deg)}
+
+/* ----------------------------- buttons ---------------------------- */
+.btn{
+  display:block;width:100%;text-align:center;cursor:pointer;
+  border:2.5px solid var(--ink);border-radius:var(--radius);
+  background:var(--blue);color:#fff;font-family:var(--display);font-weight:700;
+  font-size:19px;letter-spacing:.01em;padding:14px 18px;box-shadow:var(--pop);
+  transition:transform .09s ease, box-shadow .09s ease, background .15s ease;
+}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--ink)}
+.btn:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:var(--pop)}
+.btn.pink{background:var(--pink)} .btn.yellow{background:var(--yellow);color:var(--ink)}
+.btn.green{background:var(--green)} .btn.orange{background:var(--orange)}
+.btn.violet{background:var(--violet)} .btn.teal{background:var(--teal);color:var(--ink)}
+.btn.ghost{background:var(--cream-2);color:var(--ink)}
+.btn.sm{font-size:15px;padding:10px 14px;border-width:2px;box-shadow:var(--pop-sm)}
+.linkbtn{
+  background:none;border:none;cursor:pointer;font-family:var(--label);font-size:10px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);
+  text-decoration:underline;text-underline-offset:4px;padding:10px;
+}
+.linkbtn:hover{color:var(--ink)}
+
+/* ------------------------------ cards ----------------------------- */
+.card{
+  background:var(--cream-2);border:2.5px solid var(--ink);border-radius:var(--radius);
+  box-shadow:var(--pop);padding:16px;
+}
+.card.flat{box-shadow:none}
+.card.tint-blue{background:#E6F2FD} .card.tint-pink{background:#FDEAF5}
+.card.tint-yellow{background:#FEF5DA} .card.tint-teal{background:#E4F7F7}
+.card.tint-green{background:#E7F6EC} .card.tint-violet{background:#EEEBFD}
+
+.stack{display:flex;flex-direction:column;gap:12px}
+.stack > .sticker{align-self:flex-start}
+.stack.center > .sticker{align-self:center}
+.stack.sm{gap:8px}
+.row{display:flex;align-items:center;gap:10px}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.grow{flex:1}
+.center{text-align:center}
+
+/* ----------------------------- inputs ----------------------------- */
+input[type=text],input[type=email],input[type=password],textarea,select{
+  width:100%;background:var(--cream-2);border:2.5px solid var(--ink);border-radius:var(--radius-sm);
+  padding:12px 13px;outline:none;box-shadow:inset 2px 2px 0 rgba(30,36,48,.06);resize:none;
+}
+input:focus,textarea:focus,select:focus{box-shadow:var(--pop-sm);transform:translate(-1px,-1px)}
+label.field{display:block}
+label.field > span{display:block;margin-bottom:6px}
+
+/* ---------------------------- pixel art --------------------------- */
+.px{display:block;image-rendering:pixelated}
+.px-frame{
+  background:var(--cream-2);border:2.5px solid var(--ink);border-radius:var(--radius);
+  padding:6px;box-shadow:var(--pop-sm);display:inline-block;line-height:0;
+}
+.px-frame.plain{border:none;box-shadow:none;background:none;padding:0}
+
+/* --------------------------- progress ----------------------------- */
+.pips{display:flex;align-items:center;gap:7px}
+.pip{
+  width:14px;height:14px;border:2.5px solid var(--ink);background:var(--cream-2);
+  border-radius:3px;transition:background .3s ease, transform .3s ease;
+}
+.pip.on{background:var(--blue);transform:scale(1.12)}
+.pip.now{animation:pip-blink 1.2s steps(2) infinite}
+@keyframes pip-blink{0%,49%{background:var(--cream-2)}50%,100%{background:var(--yellow)}}
+
+.bar{height:14px;border:2.5px solid var(--ink);border-radius:4px;background:var(--cream-2);overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--blue);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+
+/* ---------------------------- banners ----------------------------- */
+.note{
+  border:2.5px solid var(--ink);border-radius:var(--radius);padding:12px 14px;
+  background:var(--cream-2);box-shadow:var(--pop-sm);font-size:14px;line-height:1.5;
+}
+.note.blue{background:#E6F2FD} .note.pink{background:#FDEAF5}
+.note.yellow{background:#FEF5DA} .note.green{background:#E7F6EC}
+.note.teal{background:#E4F7F7} .note.violet{background:#EEEBFD}
+.note b{font-family:var(--display);font-size:16px;display:block;margin-bottom:2px}
+
+/* ---------------------------- motion ------------------------------ */
+.rise{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pop-in{animation:pop-in .4s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes pop-in{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+.bob{animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.wiggle{animation:wiggle 2.6s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.seq > *{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+.seq > *:nth-child(1){animation-delay:.02s} .seq > *:nth-child(2){animation-delay:.08s}
+.seq > *:nth-child(3){animation-delay:.14s} .seq > *:nth-child(4){animation-delay:.2s}
+.seq > *:nth-child(5){animation-delay:.26s} .seq > *:nth-child(6){animation-delay:.32s}
+.seq > *:nth-child(7){animation-delay:.38s} .seq > *:nth-child(8){animation-delay:.44s}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+
+/* --------------------------- confetti ----------------------------- */
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:90}
+.confetti i{position:absolute;width:10px;height:10px;border:2px solid var(--ink);animation:drop linear forwards}
+@keyframes drop{to{transform:translateY(115vh) rotate(540deg)}}
+
+/* ---------------------------- layout ------------------------------ */
+.wrap{width:min(560px,100%);margin:0 auto;padding:18px 18px 40px}
+.topbar{
+  position:sticky;top:0;z-index:40;background:var(--cream);border-bottom:2.5px solid var(--ink);
+}
+.topbar .inner{width:min(560px,100%);margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:10px}
+.logo{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.01em;display:flex;align-items:center;gap:7px}
+.logo .blocks{display:flex;gap:2px}
+.logo .blocks i{width:6px;height:6px;border:1.5px solid var(--ink);display:block}
+.logo .blocks i:nth-child(1){background:var(--blue)}
+.logo .blocks i:nth-child(2){background:var(--pink)}
+.logo .blocks i:nth-child(3){background:var(--yellow)}
+
+.dotgrid{
+  background-image:radial-gradient(var(--cream-3) 1.4px, transparent 1.4px);
+  background-size:14px 14px;
+}
