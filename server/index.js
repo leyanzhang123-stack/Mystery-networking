@@ -45,8 +45,31 @@ function parseCookies(header) {
   }
   return out;
 }
+const SECURE_COOKIES = process.env.SECURE_COOKIES === '1';
 const sessionCookie = (value, maxAge) =>
-  `mn_session=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`;
+  `mn_session=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}` +
+  (SECURE_COOKIES ? '; Secure' : '');
+
+/* ------------------------------ throttling ----------------------------- */
+const attempts = new Map();   // key -> { count, until }
+function tooManyAttempts(key) {
+  const rec = attempts.get(key);
+  if (!rec) return 0;
+  const now = Date.now();
+  if (rec.until > now) return Math.ceil((rec.until - now) / 1000);
+  // a block that has run out is forgiven; a bare count is kept so the
+  // fifth wrong password still trips the block
+  if (rec.until) { attempts.delete(key); }
+  return 0;
+}
+function noteFailure(key) {
+  const rec = attempts.get(key) || { count: 0, until: 0 };
+  rec.count++;
+  // after five bad tries, back off for a minute, doubling up to ten
+  if (rec.count >= 5) rec.until = Date.now() + Math.min(600, 60 * (rec.count - 4)) * 1000;
+  attempts.set(key, rec);
+}
+const clearFailures = (key) => attempts.delete(key);
 
 /* -------------------------------- helpers ------------------------------ */
 function send(res, status, body, headers) {
@@ -146,10 +169,15 @@ api['POST /api/register'] = async (req, res) => {
 
 api['POST /api/login'] = async (req, res) => {
   const body = await readBody(req);
-  const user = store.getUserByEmail(clean(body.email, 120));
+  const email = clean(body.email, 120);
+  const wait = tooManyAttempts(email.toLowerCase());
+  if (wait) return fail(res, 429, `Too many tries. Wait ${wait} seconds.`);
+  const user = store.getUserByEmail(email);
   if (!user || !store.verifyPassword(String(body.password || ''), user.password)) {
+    noteFailure(email.toLowerCase());
     return fail(res, 401, 'Wrong email or password.');
   }
+  clearFailures(email.toLowerCase());
   send(res, 200, { ok: true, user: selfView(user) }, { 'Set-Cookie': sessionCookie(signSession(user.id), SESSION_DAYS * 86400) });
 };
 

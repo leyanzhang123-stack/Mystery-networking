@@ -41,6 +41,10 @@ before you send the link to anyone else.
 | `PORT` | `3000` | |
 | `DATA_DIR` | `./data` | Where the SQLite file lives. Point it at a persistent disk when deploying. |
 | `SESSION_SECRET` | generated into `DATA_DIR/session.key` | Set it explicitly in production. |
+| `SECURE_COOKIES` | off | Set to `1` when serving over HTTPS so the session cookie is marked `Secure`. |
+
+Five wrong passwords for the same address blocks that address for a minute,
+doubling up to ten, so the sign-in page cannot be hammered.
 
 The whole database is one file, `data/mystery.db`. Back it up by copying it.
 
