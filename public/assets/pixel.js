@@ -15,15 +15,38 @@
   var G = 32;
   var OUTLINE = '#2A2A33';
 
-  var SKIN  = ['#F6D7BE', '#EDC5A4', '#DCA97F', '#C08B5E', '#9C6B44', '#7A4F31', '#5C3A24'];
-  // Natural hair first, with two quiet dyed options at the end.
-  var HAIR  = ['#1F1913', '#2B2118', '#3E2C1E', '#54381F', '#6F4526', '#8A5A2B', '#A9743A',
-               '#C79A४F'.replace('४','4'), '#D9B677', '#E6D3A8', '#B5563A', '#8A3F33',
-               '#9A9187', '#D8D2C6', '#C98BA6', '#8FA6C4'];
-  var WEAR  = ['#5B5BD6', '#7E6BE0', '#A9C8F0', '#C9A9F0', '#A8DFC1', '#F2B8A2',
-               '#E8E4DC', '#3A3A46', '#6E8FA8', '#C25F4E', '#D8C38A', '#4E7A63'];
-  var LEGS  = ['#2F3340', '#3F4A63', '#5A4A3C', '#454A52', '#6A5B75', '#2B3A34'];
-  var SHOE  = ['#23242C', '#C25F4E', '#EDEAE2', '#5B5BD6', '#6E6A60'];
+  // Weighted: the lighter and mid tones repeat, so a wall of 60 characters
+  // reads varied instead of being split evenly across seven extremes.
+  var SKIN  = ['#FBE3CC', '#FBE3CC', '#F6D7BE', '#F6D7BE', '#F6D7BE', '#EDC5A4', '#EDC5A4',
+               '#E0AC7E', '#E0AC7E', '#C08B5E', '#9C6B44', '#7A4F31'];
+
+  // Natural tones, weighted the way a room of students actually looks,
+  // with two dyed heads at the end for variety.
+  var HAIR  = ['#1F1913', '#1F1913', '#2B2118', '#2B2118', '#3E2C1E', '#3E2C1E',
+               '#54381F', '#54381F', '#6F4526', '#6F4526', '#8A5A2B', '#A9743A',
+               '#C79A4F', '#D9B677', '#E6D3A8', '#B5563A', '#9A9187', '#C98BA6'];
+
+  // Whole outfits rather than three independent random colours — this is what
+  // stops the cast looking like a paint chart.
+  var OUTFITS = [
+    { wear: '#E9E4DA', legs: '#2E3550', shoe: '#EFECE4' },
+    { wear: '#3A3F4A', legs: '#2A2E36', shoe: '#1E2027' },
+    { wear: '#8FA68C', legs: '#2F3338', shoe: '#E9E6DE' },
+    { wear: '#B5603F', legs: '#2E3550', shoe: '#4A3A2E' },
+    { wear: '#39506B', legs: '#C4B79E', shoe: '#2A2E36' },
+    { wear: '#B9A7D6', legs: '#33363D', shoe: '#EDEAE2' },
+    { wear: '#6E7A55', legs: '#4A4036', shoe: '#2A2620' },
+    { wear: '#F2F0EA', legs: '#23252B', shoe: '#B5523F' },
+    { wear: '#D8C9A8', legs: '#3E4550', shoe: '#2A2E36' },
+    { wear: '#5E6E8C', legs: '#33363D', shoe: '#E9E6DE' },
+    { wear: '#C98B8B', legs: '#33363D', shoe: '#EDEAE2' },
+    { wear: '#2F5D52', legs: '#37332C', shoe: '#20242A' },
+    { wear: '#1F2430', legs: '#4A5266', shoe: '#EFECE4' },
+    { wear: '#E3B04B', legs: '#2E3550', shoe: '#2A2E36' },
+    { wear: '#7D6B8F', legs: '#2A2E36', shoe: '#E9E6DE' },
+    { wear: '#A8B8C4', legs: '#3A3F4A', shoe: '#2A2E36' }
+  ];
+
   var NEUTRAL_TRIM = ['#2A2A33', '#3E3A34', '#E8E4DC', '#C4BDB1', '#6E6A60'];
 
   var HAIR_STYLES = ['short', 'bob', 'long', 'ponytail', 'curls', 'crop', 'wave', 'bun', 'braids'];
@@ -64,17 +87,17 @@
   }
   function spec(seed) {
     var p = picker(seed);
+    var outfit = p(OUTFITS, 'outfit');
     var s = {
       seed: String(seed),
       skin: p(SKIN, 'skin'),
       hair: p(HAIR, 'hair'),
       hairStyle: p(HAIR_STYLES, 'style'),
-      wear: p(WEAR, 'wear'),
-      legs: p(LEGS, 'legs'),
-      shoe: p(SHOE, 'shoe'),
+      wear: outfit.wear,
+      legs: outfit.legs,
+      shoe: outfit.shoe,
       extra: p(EXTRAS, 'extra'),
       face: p(FACES, 'face'),
-      // accessories borrow the outfit colour or a neutral, so nothing clashes
       trim: p([0, 1, 2], 'trimpick') === 0 ? p(NEUTRAL_TRIM, 'trimn') : null
     };
     if (!s.trim) s.trim = scale(s.wear, 0.62);
@@ -348,13 +371,27 @@
     }, { passive: true });
   }
 
-  /** The fixed cast every participant claims from. */
+  /** The fixed cast every participant claims from — an even, designed spread. */
   function catalogue(count) {
     count = count || 60;
     var out = [];
     for (var i = 0; i < count; i++) {
       var handle = HANDLES[i % HANDLES.length] + (i >= HANDLES.length ? ' ' + (Math.floor(i / HANDLES.length) + 1) : '');
-      out.push({ id: 'px' + (i + 1), handle: handle, spec: spec('px' + (i + 1) + ':' + handle) });
+      var outfit = OUTFITS[(i * 7) % OUTFITS.length];
+      var character = {
+        seed: 'px' + (i + 1),
+        skin: SKIN[(i * 5) % SKIN.length],
+        hair: HAIR[(i * 11) % HAIR.length],
+        hairStyle: HAIR_STYLES[(i * 4 + Math.floor(i / 9)) % HAIR_STYLES.length],
+        wear: outfit.wear,
+        legs: outfit.legs,
+        shoe: outfit.shoe,
+        extra: EXTRAS[(i * 5 + 3) % EXTRAS.length],
+        face: FACES[(i * 3 + 1) % FACES.length],
+        trim: null
+      };
+      character.trim = (i % 4 === 0) ? NEUTRAL_TRIM[(i / 4) % NEUTRAL_TRIM.length] : scale(character.wear, 0.62);
+      out.push({ id: 'px' + (i + 1), handle: handle, spec: character });
     }
     return out;
   }
