@@ -3,140 +3,131 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Mystery Networking — RESTO 2027 prototype</title>
+<title>Mystery Networking — RESTO 2027</title>
 <meta name="description" content="Interactive prototype of the Mystery Networking participant journey for RESTO 2027." />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23FBF3E4'/><rect x='3' y='5' width='3' height='3' fill='%231E2430'/><rect x='10' y='5' width='3' height='3' fill='%231E2430'/></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23F7F7F5'/><rect x='3' y='6' width='3' height='3' fill='%2317171B'/><rect x='10' y='6' width='3' height='3' fill='%235B5BD6'/></svg>" />
 <link rel="stylesheet" href="assets/ui.css" />
 <style>
-  body{overflow-x:hidden}
   .demo-bar{
-    position:sticky;top:0;z-index:50;background:var(--ink);color:var(--cream);
-    font-family:var(--label);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+    position:sticky;top:0;z-index:60;background:var(--ink);color:var(--paper);
+    font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   }
-  .demo-bar .inner{width:min(560px,100%);margin:0 auto;padding:7px 18px;display:flex;align-items:center;gap:8px}
+  .demo-bar .inner{width:min(600px,100%);margin:0 auto;padding:8px 22px;display:flex;align-items:center;gap:10px}
   .demo-bar button{
-    background:var(--yellow);color:var(--ink);border:2px solid var(--cream);border-radius:6px;
-    font-family:var(--label);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
-    padding:4px 9px;cursor:pointer
+    background:transparent;color:var(--paper);border:1px solid rgba(247,247,245,.32);
+    border-radius:5px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;padding:3px 9px;cursor:pointer;transition:.15s;
   }
-  .demo-bar button:hover{background:#fff}
-  .demo-bar .dot{width:7px;height:7px;background:var(--green);border:1.5px solid var(--cream);display:inline-block}
+  .demo-bar button:hover{background:rgba(247,247,245,.14)}
+  .demo-bar .live{width:5px;height:5px;border-radius:50%;background:var(--mint)}
+  .topbar{top:31px}
 
-  .screen{display:none}
-  .screen.on{display:block}
+  /* the mystery portrait */
+  .portrait{width:min(230px,62vw);margin:0 auto;aspect-ratio:1;border-radius:var(--r);
+            background:var(--paper-3);border:1px solid var(--line);padding:14px;position:relative}
+  .portrait.ink{background:#22222A;border-color:#33333D}
+  .portrait .scan{position:absolute;left:0;right:0;top:0;height:2px;background:var(--accent);opacity:.55;
+                  animation:sweep 2.2s cubic-bezier(.5,0,.5,1) infinite}
+  @keyframes sweep{0%{top:4%}50%{top:94%}100%{top:4%}}
 
-  /* mystery card + flip */
-  .flipwrap{perspective:1200px}
-  .flipper{position:relative;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.3,1.1,.35,1)}
+  .slots{display:flex;flex-direction:column;gap:1px;margin-top:14px;border-radius:var(--r-sm);overflow:hidden}
+  .slot{display:flex;justify-content:space-between;gap:12px;padding:9px 12px;background:rgba(247,247,245,.06);
+        font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
+  .slot span{color:rgba(247,247,245,.45)}
+  .slot b{font-weight:400;color:rgba(247,247,245,.9)}
+
+  .flipwrap{perspective:1400px}
+  .flipper{position:relative;transform-style:preserve-3d;transition:transform 1.05s cubic-bezier(.3,1.05,.35,1)}
   .flipper.flipped{transform:rotateY(180deg)}
   .face{backface-visibility:hidden}
   .face.back{position:absolute;inset:0;transform:rotateY(180deg)}
-  .mystery{
-    background:var(--ink);color:var(--cream);border:2.5px solid var(--ink);border-radius:var(--radius);
-    box-shadow:var(--pop);padding:18px;text-align:center;
-  }
-  .mystery .slot{
-    display:flex;justify-content:space-between;gap:10px;font-family:var(--label);font-size:10px;
-    letter-spacing:.08em;text-transform:uppercase;background:rgba(251,243,228,.09);
-    border-radius:6px;padding:7px 9px;margin-top:6px;
-  }
-  .mystery .slot b{color:var(--yellow);font-weight:400}
-  .redacted{display:inline-block;background:var(--cream);color:transparent;border-radius:2px;padding:0 2px}
-  .pxbig{width:150px;height:150px;margin:0 auto;background:var(--cream-2);border:2.5px solid var(--cream);border-radius:10px;padding:8px}
-  .pxbig.light{background:var(--cream-2);border-color:var(--ink)}
-
-  .scan{height:5px;background:var(--cream-3);border:2px solid var(--ink);border-radius:3px;overflow:hidden}
-  .scan i{display:block;height:100%;width:30%;background:var(--blue);animation:scan 1.1s ease-in-out infinite}
-  @keyframes scan{0%{transform:translateX(-110%)}100%{transform:translateX(370%)}}
 
   .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{
-    border:2.5px solid var(--ink);border-radius:var(--radius-sm);background:var(--cream-2);
-    padding:9px 13px;cursor:pointer;box-shadow:var(--pop-sm);font-weight:600;font-size:14px;
-    transition:transform .08s,box-shadow .08s,background .15s;
-  }
-  .chip:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
-  .chip.sel{background:var(--ink);color:var(--cream);box-shadow:var(--pop-sm)}
-  .chip[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+  .chip{border:1px solid var(--line-2);background:var(--paper-2);border-radius:99px;padding:8px 14px;
+        cursor:pointer;font-size:14px;transition:.15s}
+  .chip:hover{border-color:var(--ink-3)}
+  .chip.sel{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .chip[disabled]{opacity:.35;cursor:not-allowed}
 
-  .shared{
-    display:flex;align-items:center;gap:12px;opacity:0;transform:translateX(-12px);
-    transition:.5s cubic-bezier(.2,.8,.2,1);
-  }
+  .shared{display:flex;align-items:baseline;gap:14px;padding:11px 0;border-top:1px solid var(--line);
+          opacity:0;transform:translateY(6px);transition:.5s cubic-bezier(.2,.8,.2,1)}
+  .shared:first-child{border-top:0}
   .shared.in{opacity:1;transform:none}
+  .shared .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+             color:var(--accent);min-width:88px}
 
-  .count{font-family:var(--display);font-size:110px;line-height:1;text-align:center;animation:pop-in .5s cubic-bezier(.2,1.6,.4,1) both}
+  .count{font-family:var(--display);font-weight:800;font-size:96px;letter-spacing:-.05em;text-align:center;
+         line-height:1.6;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
 
-  .splash{
-    position:fixed;inset:0;z-index:80;background:var(--blue);color:#fff;display:flex;
-    flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:26px;
-    opacity:0;pointer-events:none;transition:opacity .45s ease;
-  }
+  .splash{position:fixed;inset:0;z-index:80;background:var(--ink);color:var(--paper);display:flex;
+          flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;
+          padding:30px;opacity:0;pointer-events:none;transition:opacity .5s ease}
   .splash.on{opacity:1}
-  .splash h1{color:#fff;text-shadow:5px 5px 0 var(--ink);font-size:clamp(30px,10vw,52px)}
+  .splash h1{font-size:clamp(28px,9vw,46px);margin:0}
 
-  .duo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+  .duo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
   .duo .who{text-align:center}
-  .stamp{
-    align-self:center;flex:0 0 auto;width:172px;height:172px;min-height:0;overflow:hidden;
-    border-radius:50%;border:4px dashed var(--green);background:#E7F6EC;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px;
-    margin:4px auto;transform:rotate(-9deg) scale(0);opacity:0;transition:.6s cubic-bezier(.2,1.5,.4,1);
-  }
-  .stamp.in{transform:rotate(-9deg) scale(1);opacity:1}
+  .duo > .label{white-space:nowrap;align-self:center}
+  .stampcard{border:1px solid var(--line);border-radius:var(--r);padding:18px;background:var(--paper-2);
+             display:flex;align-items:center;gap:16px;opacity:0;transform:translateY(8px);transition:.6s}
+  .stampcard.in{opacity:1;transform:none}
+  .stampcard .seal{width:64px;height:64px;border-radius:50%;border:1.5px dashed var(--accent);
+                   display:grid;place-items:center;flex:0 0 auto;background:var(--accent-soft)}
 
-  .sidenote{display:none}
-  @media (min-width:1120px){
-    .layout{display:grid;grid-template-columns:560px 320px;gap:30px;justify-content:center;align-items:start}
-    .sidenote{display:block;position:sticky;top:80px;padding-top:18px}
+  .aside{display:none}
+  @media (min-width:1140px){
+    .layout{display:grid;grid-template-columns:600px 300px;gap:40px;justify-content:center;align-items:start}
+    .aside{display:block;padding-top:34px;position:sticky;top:110px}
   }
 </style>
 </head>
-<body class="dotgrid">
+<body>
 
 <div class="demo-bar">
   <div class="inner">
-    <span class="dot"></span><span>Demo mode — no waiting</span>
+    <span class="live"></span><span>Demo mode</span>
     <span class="grow"></span>
-    <button id="howBtn">?</button>
-    <button id="resetBtn">Reset</button>
+    <button id="howBtn">About</button>
+    <button id="resetBtn">Restart</button>
   </div>
 </div>
 
 <div class="topbar">
   <div class="inner">
-    <div class="logo"><span class="blocks"><i></i><i></i><i></i></span> Mystery Networking</div>
+    <div class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span> Mystery Networking</div>
     <span class="grow"></span>
-    <div class="pips" id="pips"><span class="pip"></span><span class="pip"></span><span class="pip"></span></div>
+    <span class="label" id="stepLabel">Clue 0 / 3</span>
+  </div>
+  <div class="steps" style="width:min(600px,100%);margin:0 auto;padding:0 22px 10px" id="steps">
+    <span class="step"><i></i></span><span class="step"><i></i></span><span class="step"><i></i></span>
   </div>
 </div>
 
 <div class="layout">
-<div class="wrap" id="app"></div>
-
-<aside class="sidenote">
-  <div class="stack">
-    <div class="card tint-yellow">
-      <span class="label">What this is</span>
-      <h3 class="display" style="margin-top:6px">A prototype, not a slide</h3>
-      <p class="small muted" style="margin:0">Eight weeks of the real RESTO 2027 pre-event journey, compressed into about ninety seconds. All participants are fictional.</p>
+  <div class="wrap" id="app"></div>
+  <aside class="aside">
+    <div class="stack">
+      <div class="card">
+        <span class="label">The concept</span>
+        <p class="small muted" style="margin:8px 0 0">Every participant is matched with one student from another university eight weeks before RESTO. They complete three small tasks together — and stay anonymous until the Welcome Event in Helsinki.</p>
+      </div>
+      <div class="card accent">
+        <span class="label accent">The mechanic</span>
+        <p class="small" style="margin:8px 0 0">Your connection arrives at a quarter of their resolution. Every completed clue loads a little more of them. The last quarter only resolves in person.</p>
+      </div>
+      <div class="card">
+        <span class="label">Why it matters</span>
+        <p class="small muted" style="margin:8px 0 0">The technology is not the experience. It only creates the anticipation — so the first real conversation in Helsinki starts somewhere other than “where are you from”.</p>
+      </div>
+      <p class="tiny">Prototype · fictional participants · about 90 seconds end to end</p>
     </div>
-    <div class="card tint-blue">
-      <span class="label">The mechanic</span>
-      <p class="small" style="margin:6px 0 0">Your connection starts as four coloured blocks. Every clue you finish loads a few more pixels. They only resolve into a person when you meet in Helsinki.</p>
-    </div>
-    <div class="card">
-      <span class="label">The point</span>
-      <p class="small" style="margin:6px 0 0"><b>The technology is not the experience.</b> The app only builds the anticipation. The handshake in Helsinki is the product.</p>
-    </div>
-  </div>
-</aside>
+  </aside>
 </div>
 
 <div class="splash" id="splash">
-  <span class="sticker cream wiggle">Helsinki · March 2027</span>
-  <h1 class="display">WELCOME TO RESTO 2027</h1>
-  <p class="lead" style="max-width:340px;margin:0">Three clues done. One stranger left. Time to load the last pixels.</p>
+  <span class="label" style="color:rgba(247,247,245,.5)">Helsinki · March 2027</span>
+  <h1 class="display">The Welcome <span class="serif">Event</span></h1>
+  <p class="lead" style="color:rgba(247,247,245,.62);max-width:330px;margin:0">Eight weeks of not knowing end here.</p>
 </div>
 <div class="confetti" id="confetti"></div>
 
@@ -145,142 +136,140 @@
 (function(){
 "use strict";
 
-/* ---------------------------- the cast ---------------------------- */
 var cast = PIXEL.catalogue(60);
-function byName(n){ for(var i=0;i<cast.length;i++) if(cast[i].codename===n) return cast[i]; return cast[0]; }
+function byHandle(h){ for(var i=0;i<cast.length;i++) if(cast[i].handle===h) return cast[i]; return cast[0]; }
 
-var ME   = { codename:'Pocket Compass', real:'Emma', uni:'Haaga-Helia UAS', programme:'Hospitality Management', spec:byName('Pocket Compass').spec };
-var THEM = { codename:'Neon Lighthouse', real:'Alex', uni:'Metropolia UAS', programme:'Tourism Management', spec:byName('Neon Lighthouse').spec };
+var ME   = { handle:'Compass',  real:'Emma', uni:'Haaga-Helia University of Applied Sciences', programme:'Hospitality Management', spec:byHandle('Compass').spec };
+var THEM = { handle:'Meridian', real:'Alex', uni:'Metropolia University of Applied Sciences', programme:'Tourism Management',      spec:byHandle('Meridian').spec };
 
-var state = { clues:0, words:[], recognition:"I'll be wearing a red scarf." };
+var state = { clues:0, words:[], recognition:'I will be wearing a red scarf.' };
 
 var app = document.getElementById('app');
-var pipsEl = document.getElementById('pips');
+var stepsEl = document.getElementById('steps');
+var stepLabel = document.getElementById('stepLabel');
 var splash = document.getElementById('splash');
 var confettiEl = document.getElementById('confetti');
 
-/* --------------------------- helpers ------------------------------ */
-function px(spec, opts){ return PIXEL.svg(spec, opts||{}); }
-/* how resolved the mystery connection currently looks: 0 blobs -> 2 blurry -> 3 sharp */
+function px(spec,opts){ return PIXEL.svg(spec,opts||{}); }
 function level(){ return Math.min(2, state.clues); }
+function pct(){ return [25,50,75,100][Math.min(3,state.clues)]; }
 
-function pips(){
-  var kids = pipsEl.children;
+function progress(){
   for(var i=0;i<3;i++){
-    kids[i].className = 'pip' + (i<state.clues ? ' on' : (i===state.clues ? ' now' : ''));
+    stepsEl.children[i].className = 'step' + (i<state.clues ? ' done' : (i===state.clues ? ' now' : ''));
   }
+  stepLabel.textContent = 'Clue ' + state.clues + ' / 3';
 }
 function show(html){
   app.innerHTML = html;
   window.scrollTo({top:0,behavior:'smooth'});
-  pips();
-  PIXEL.trackEyes(app);
+  progress();
 }
-function on(id, fn){ var el=document.getElementById(id); if(el) el.onclick=fn; return el; }
+function on(id,fn){ var el=document.getElementById(id); if(el) el.onclick=fn; return el; }
 
 function confetti(n){
-  var cols=['var(--blue)','var(--pink)','var(--yellow)','var(--orange)','var(--teal)','var(--green)'];
-  for(var i=0;i<(n||60);i++){
+  var cols=['#5B5BD6','#C9A9F0','#A8DFC1','#F2B8A2','#17171B'];
+  for(var i=0;i<(n||50);i++){
     var p=document.createElement('i');
-    p.style.left=Math.random()*100+'%';
-    p.style.top=(-20-Math.random()*60)+'px';
+    p.style.left=Math.random()*100+'%'; p.style.top=(-16-Math.random()*50)+'px';
     p.style.background=cols[i%cols.length];
-    p.style.animationDuration=(1.6+Math.random()*1.6)+'s';
-    p.style.animationDelay=(Math.random()*.4)+'s';
+    p.style.animationDuration=(1.7+Math.random()*1.5)+'s';
+    p.style.animationDelay=(Math.random()*.45)+'s';
     confettiEl.appendChild(p);
-    (function(node){ setTimeout(function(){ node.remove(); },4000); })(p);
+    (function(node){ setTimeout(function(){ node.remove(); },4200); })(p);
   }
 }
 
-/* --------------------------- screens ------------------------------ */
+/* ---------------------------- screens ----------------------------- */
 var S = {};
 
 S.welcome = function(){
   show(
-  '<div class="stack seq" style="padding-top:8px">'+
-    '<div class="row" style="gap:7px;flex-wrap:wrap">'+
-      '<span class="sticker blue">3 clues</span>'+
-      '<span class="sticker pink tilt-r">1 connection</span>'+
-      '<span class="sticker teal">0 spoilers</span>'+
-    '</div>'+
-    '<h1 class="display">Somebody at RESTO is already yours.</h1>'+
-    '<p class="lead muted" style="margin:0">You just don\'t get to know who. Not for eight weeks.</p>'+
-    '<div class="card tint-blue row" style="gap:14px">'+
-      '<div class="px-frame plain" style="width:84px;flex:0 0 auto">'+px(THEM.spec,{level:0})+'</div>'+
+  '<div class="stack seq">'+
+    '<span class="tag"><span class="dot"></span> RESTO 2027 · Helsinki</span>'+
+    '<h1 class="display">Networking begins <span class="serif">eight weeks</span> before anyone lands in Helsinki.</h1>'+
+    '<p class="lead">You have been matched with one student from another university. You will not find out who they are until the Welcome Event.</p>'+
+    '<div class="card raised row">'+
+      '<div class="px-tile" style="width:86px;flex:0 0 auto">'+px(THEM.spec,{level:0})+'</div>'+
       '<div><span class="label">Your mystery connection</span>'+
-      '<h3 class="display" style="margin:4px 0 2px">Four blocks of colour</h3>'+
-      '<p class="tiny muted" style="margin:0">A real student, from another university. That is genuinely all you get today.</p></div>'+
+        '<h3 class="display" style="margin:6px 0 3px">Loaded at 25%</h3>'+
+        '<p class="tiny" style="margin:0">A real participant. Three clues from now, still mostly unknown.</p></div>'+
     '</div>'+
-    '<button class="btn" id="go">Start my mystery</button>'+
-    '<div class="card flat row" style="gap:12px;background:none;border-style:dashed;box-shadow:none">'+
-      '<div style="width:52px;flex:0 0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
-      '<div><span class="label">You are</span><div class="display" style="font-size:17px">Pocket Compass</div>'+
-      '<span class="tiny muted">Your real name is in the vault until Helsinki.</span></div>'+
+    '<button class="btn" id="go">Begin</button>'+
+    '<div class="row wrap" style="gap:7px">'+
+      '<span class="tag">Three clues</span><span class="tag">One connection</span><span class="tag">One reveal</span>'+
+    '</div>'+
+    '<hr class="divider" />'+
+    '<div class="row">'+
+      '<div class="px-tile" style="width:54px;flex:0 0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
+      '<div><span class="label">Signed in as</span>'+
+      '<div style="font-weight:600">Compass</div>'+
+      '<span class="tiny">Emma · Haaga-Helia UAS. Your real name stays hidden until the event.</span></div>'+
     '</div>'+
   '</div>');
-  on('go', function(){ S.matching(); });
+  on('go', S.matching);
 };
 
 S.matching = function(){
   show(
-  '<div class="stack" style="padding-top:36px;text-align:center;align-items:center">'+
-    '<div class="px-frame" style="width:120px" id="spin">'+px(THEM.spec,{level:0})+'</div>'+
-    '<h2 class="display" id="mt" style="margin-top:12px">Scanning 14 universities</h2>'+
-    '<p class="lead muted" id="ms" style="margin:0">Hold on. This is the only time you will have to wait.</p>'+
-    '<div class="scan" style="width:200px"><i></i></div>'+
+  '<div class="stack center" style="padding-top:52px;align-items:center">'+
+    '<div class="portrait ink float"><div class="scan"></div>'+px(THEM.spec,{level:0})+'</div>'+
+    '<h2 class="display" id="mt" style="margin-top:26px">Finding your connection</h2>'+
+    '<p class="lead" id="ms" style="margin:0">312 participants · 14 universities</p>'+
   '</div>');
   var lines=[
-    ['Scanning 14 universities','Hold on. This is the only time you will have to wait.'],
-    ['312 participants','One of them is about to become your problem for eight weeks.'],
-    ['Got one.','Locked in. No swapping, no take-backs.']
+    ['Finding your connection','312 participants · 14 universities'],
+    ['Checking you are not classmates','A mystery connection is always from another university'],
+    ['Matched','One person. No swapping.']
   ];
   var i=0;
   var iv=setInterval(function(){
     i++;
-    if(i>=lines.length){ clearInterval(iv); setTimeout(S.locked, 700); return; }
     var mt=document.getElementById('mt'), ms=document.getElementById('ms');
-    if(!mt) { clearInterval(iv); return; }
+    if(!mt){ clearInterval(iv); return; }
+    if(i>=lines.length){ clearInterval(iv); setTimeout(S.locked, 750); return; }
     mt.textContent=lines[i][0]; ms.textContent=lines[i][1];
-    mt.classList.remove('pop-in'); void mt.offsetWidth; mt.classList.add('pop-in');
-    if(i===lines.length-1){ document.getElementById('spin').classList.add('pop-in'); }
-  },1150);
+    mt.classList.remove('fade'); void mt.offsetWidth; mt.classList.add('fade');
+    if(i===lines.length-1){ var sc=document.querySelector('.scan'); if(sc) sc.remove(); }
+  },1200);
 };
 
-function mysteryCard(opts){
-  opts = opts || {};
-  return '<div class="mystery '+(opts.cls||'')+'">'+
-    '<span class="label" style="color:var(--yellow)">Mystery connection</span>'+
-    '<div class="pxbig" style="margin-top:10px">'+px(THEM.spec,{level:opts.level})+'</div>'+
-    '<h2 class="display" style="color:var(--cream);margin:12px 0 2px">'+THEM.codename+'</h2>'+
-    '<p class="tiny" style="color:rgba(251,243,228,.62);margin:0 0 10px">Loaded at '+[25,50,75,100][opts.level]+'% resolution</p>'+
-    '<div class="slot"><span>Real name</span><b>[redacted]</b></div>'+
-    '<div class="slot"><span>University</span><b>[redacted]</b></div>'+
-    '<div class="slot"><span>Face</span><b>'+(opts.level>=2?'loading…':'not yet')+'</b></div>'+
+function mysteryCard(lv){
+  return '<div class="card ink">'+
+    '<div class="spread"><span class="label">Mystery connection</span>'+
+      '<span class="label">'+[25,50,75,100][lv]+'% resolved</span></div>'+
+    '<div class="portrait ink" style="margin:16px auto 0;background:#1B1B22">'+px(THEM.spec,{level:lv})+'</div>'+
+    '<h2 class="display" style="margin:16px 0 0;text-align:center;color:var(--paper)">'+THEM.handle+'</h2>'+
+    '<div class="slots">'+
+      '<div class="slot"><span>Real name</span><b>Hidden</b></div>'+
+      '<div class="slot"><span>University</span><b>Hidden</b></div>'+
+      '<div class="slot"><span>Photograph</span><b>'+(lv>=2?'Partly loaded':'Not yet')+'</b></div>'+
+    '</div>'+
   '</div>';
 }
 
 S.locked = function(){
   show(
   '<div class="stack seq">'+
-    '<span class="sticker green">Match found</span>'+
-    '<h1 class="display">Say hello to Neon Lighthouse.</h1>'+
-    '<p class="lead muted" style="margin:0">Somewhere in Finland they just got the same screen about you. Equally unhelpful.</p>'+
-    mysteryCard({level:0})+
-    '<div class="note yellow"><b>Three clues. Three weeks. One reveal.</b>Every clue you finish loads a few more pixels. Finish all three and they are still a blur — the rest only happens in Helsinki.</div>'+
-    '<button class="btn" id="go">Unlock clue 1</button>'+
+    '<span class="tag accent"><span class="dot"></span> Matched</span>'+
+    '<h1 class="display">This is <span class="serif">Meridian</span>.</h1>'+
+    '<p class="lead">Somewhere in Finland they are looking at exactly this much of you.</p>'+
+    mysteryCard(0)+
+    '<div class="note accent"><b>Three clues, three weeks</b>Each completed clue loads a little more of them. After all three they are still only three quarters there — the rest resolves in Helsinki.</div>'+
+    '<button class="btn" id="go">Open clue 1</button>'+
   '</div>');
   on('go', S.clue1);
 };
 
 S.clue1 = function(){
-  var WORDS=['Curious','Adventurous','Foodie','Creative','Social','Calm','Traveller','Coffee person'];
+  var WORDS=['Curious','Adventurous','Creative','Organised','Social','Calm','Traveller','Early riser'];
   show(
   '<div class="stack seq">'+
-    '<span class="sticker blue">Clue 1 of 3 · Week 3</span>'+
-    '<h1 class="display">Who are you, roughly?</h1>'+
-    '<p class="lead muted" style="margin:0">Three words. Not your name. Not your school. Three words.</p>'+
-    '<div class="card stack sm">'+
-      '<div class="spread"><span class="label">Pick three</span><span class="label" id="cnt">0 / 3</span></div>'+
+    '<span class="label">Clue 1 of 3 · Week 3</span>'+
+    '<h1 class="display">Three words.</h1>'+
+    '<p class="lead">Describe yourself in three words. Not your name, not your university, not your course.</p>'+
+    '<div class="card">'+
+      '<div class="spread" style="margin-bottom:12px"><span class="label">Choose three</span><span class="label" id="cnt">0 / 3</span></div>'+
       '<div class="chips" id="chips"></div>'+
     '</div>'+
     '<div id="after"></div>'+
@@ -305,41 +294,40 @@ S.clue1 = function(){
 
   btn.onclick=function(){
     if(btn.dataset.done){ S.clue2(); return; }
-    state.words=picked.slice(); state.clues=1; pips();
-    document.getElementById('after').innerHTML =
+    state.words=picked.slice(); state.clues=1; progress();
+    document.getElementById('after').innerHTML=
       '<div class="stack sm rise">'+
-        '<div class="note green"><b>Clue 1 sent</b>'+picked.join(' &middot; ')+'</div>'+
-        '<div class="card tint-blue row" style="gap:12px">'+
-          '<div style="width:64px;flex:0 0 auto">'+px(THEM.spec,{level:1})+'</div>'+
-          '<div><span class="label">Neon Lighthouse answered too</span>'+
-          '<div style="font-weight:700;margin:2px 0">Calm &middot; Traveller &middot; Creative</div>'+
-          '<span class="tiny muted">Resolution now 50%. Still four unhelpful smudges.</span></div>'+
+        '<div class="note"><b>Clue 1 sent</b>'+picked.join(' · ')+'</div>'+
+        '<div class="card row">'+
+          '<div class="px-tile" style="width:70px;flex:0 0 auto">'+px(THEM.spec,{level:1})+'</div>'+
+          '<div><span class="label">Meridian answered too</span>'+
+            '<div style="font-weight:600;margin:3px 0">Calm · Traveller · Creative</div>'+
+            '<span class="tiny">Now 50% resolved.</span></div>'+
         '</div>'+
       '</div>';
-    btn.textContent='Continue'; btn.className='btn green'; btn.dataset.done='1';
+    btn.textContent='Continue'; btn.dataset.done='1';
   };
 };
 
 S.clue2 = function(){
   var SHARED=[
-    ['Travel','teal','Interrailed through Europe. Both of you. Same summer.'],
-    ['Coffee','orange','Neither of you can start before the second cup.'],
-    ['Live music','pink','Flow Festival is already in both calendars.']
+    ['Travel','Both of you interrailed through Europe last summer.'],
+    ['Coffee','Neither of you is willing to speak before the second cup.'],
+    ['Live music','Flow Festival is already in both calendars.']
   ];
   show(
   '<div class="stack seq">'+
-    '<span class="sticker pink">Clue 2 of 3 · Week 5</span>'+
-    '<h1 class="display">Find the overlap.</h1>'+
-    '<p class="lead muted" style="margin:0">Three things you have in common. Still no names. Still no cheating.</p>'+
-    '<div class="card stack" id="list"></div>'+
+    '<span class="label">Clue 2 of 3 · Week 5</span>'+
+    '<h1 class="display">What you <span class="serif">share</span>.</h1>'+
+    '<p class="lead">Find three things you have in common — without giving away who you are.</p>'+
+    '<div class="card" id="list"></div>'+
     '<div id="after"></div>'+
-    '<button class="btn pink" id="go">Compare answers</button>'+
+    '<button class="btn" id="go">Compare answers</button>'+
   '</div>');
 
   var list=document.getElementById('list');
   list.innerHTML = SHARED.map(function(s){
-    return '<div class="shared"><span class="sticker '+s[1]+'" style="min-width:96px;text-align:center">'+s[0]+'</span>'+
-           '<span class="small">'+s[2]+'</span></div>';
+    return '<div class="shared"><span class="k">'+s[0]+'</span><span class="small">'+s[1]+'</span></div>';
   }).join('');
 
   var btn=document.getElementById('go');
@@ -349,18 +337,17 @@ S.clue2 = function(){
     var rows=list.querySelectorAll('.shared'), i=0;
     var iv=setInterval(function(){
       if(i>=rows.length){
-        clearInterval(iv);
-        state.clues=2; pips();
+        clearInterval(iv); state.clues=2; progress();
         document.getElementById('after').innerHTML=
           '<div class="stack sm rise">'+
-            '<div class="note pink"><b>Three for three.</b>You have more in common with this person than with most of your course. You still cannot pick them out of a room.</div>'+
-            '<div class="card row" style="gap:12px">'+
-              '<div style="width:70px;flex:0 0 auto">'+px(THEM.spec,{level:2})+'</div>'+
-              '<div><span class="label">Resolution 75%</span><div style="font-weight:700">Almost a person.</div>'+
-              '<span class="tiny muted">Almost is doing a lot of work in that sentence.</span></div>'+
+            '<div class="note accent"><b>Three for three</b>You now have more in common with this person than with most of your own course, and you still could not pick them out of a room.</div>'+
+            '<div class="card row">'+
+              '<div class="px-tile" style="width:70px;flex:0 0 auto">'+px(THEM.spec,{level:2})+'</div>'+
+              '<div><span class="label">75% resolved</span><div style="font-weight:600;margin:3px 0">Almost a person</div>'+
+              '<span class="tiny">Almost is doing a lot of work in that sentence.</span></div>'+
             '</div>'+
           '</div>';
-        btn.disabled=false; btn.textContent='Unlock final clue'; btn.dataset.done='1';
+        btn.disabled=false; btn.textContent='Open the final clue'; btn.dataset.done='1';
         return;
       }
       rows[i].classList.add('in'); i++;
@@ -371,35 +358,33 @@ S.clue2 = function(){
 S.clue3 = function(){
   show(
   '<div class="stack seq">'+
-    '<span class="sticker orange">Clue 3 of 3 · Week 7</span>'+
-    '<h1 class="display">How do they spot you?</h1>'+
-    '<p class="lead muted" style="margin:0">One room. Three hundred students. Five minutes. Make it easy for them.</p>'+
-    '<div class="card stack sm">'+
+    '<span class="label">Clue 3 of 3 · Week 7</span>'+
+    '<h1 class="display">How will they <span class="serif">recognise</span> you?</h1>'+
+    '<p class="lead">One room, three hundred students, five minutes. Leave something they can actually spot.</p>'+
+    '<div class="card">'+
       '<label class="field"><span class="label">Your recognition clue</span>'+
       '<textarea id="rec" rows="3">'+state.recognition+'</textarea></label>'+
-      '<p class="tiny muted" style="margin:0">Good: a red scarf, the tallest person at the coffee table. Bad: "I have brown hair."</p>'+
+      '<p class="tiny" style="margin:10px 0 0">Useful: a red scarf, the tallest person at the coffee table. Not useful: “I have brown hair”.</p>'+
     '</div>'+
     '<div id="after"></div>'+
-    '<button class="btn orange" id="go">Send final clue</button>'+
-    '<button class="linkbtn" id="skip" style="display:none">Jump to the welcome event</button>'+
+    '<button class="btn" id="go">Send final clue</button>'+
+    '<button class="linkbtn" id="skip" style="display:none">Skip ahead to the Welcome Event</button>'+
   '</div>');
 
   var btn=document.getElementById('go'), skip=document.getElementById('skip');
   btn.onclick=function(){
     if(btn.dataset.done){ S.event(); return; }
     var v=(document.getElementById('rec').value||'').trim();
-    state.recognition = v || "I'll be wearing a red scarf.";
-    state.clues=3; pips(); confetti(30);
+    state.recognition = v || 'I will be wearing a red scarf.';
+    state.clues=3; progress();
     document.getElementById('after').innerHTML=
       '<div class="stack sm rise">'+
-        '<div class="note green"><b>All three clues done</b>Nothing left to do except turn up in Helsinki.</div>'+
-        '<div class="mystery" style="text-align:left">'+
-          '<div class="row" style="gap:12px">'+
-            '<div style="width:64px;flex:0 0 auto;background:var(--cream-2);border-radius:8px;padding:4px">'+px(THEM.spec,{level:2})+'</div>'+
-            '<div><span class="label" style="color:var(--yellow)">Locked</span>'+
-            '<div class="display" style="color:var(--cream);font-size:17px">75% and holding</div>'+
-            '<span class="tiny" style="color:rgba(251,243,228,.6)">The last 25% only loads at the welcome event.</span></div>'+
-          '</div>'+
+        '<div class="note"><b>All three clues complete</b>Nothing left to do but turn up.</div>'+
+        '<div class="card ink row">'+
+          '<div class="px-tile ink" style="width:70px;flex:0 0 auto">'+px(THEM.spec,{level:2})+'</div>'+
+          '<div><span class="label">Locked</span>'+
+            '<div class="display" style="font-size:17px;margin:3px 0">75% and holding</div>'+
+            '<span class="tiny">The last quarter loads at the Welcome Event.</span></div>'+
         '</div>'+
       '</div>';
     btn.textContent='Wait for the reveal'; btn.className='btn ghost'; btn.dataset.done='1';
@@ -410,34 +395,33 @@ S.clue3 = function(){
 
 S.event = function(){
   splash.classList.add('on');
-  setTimeout(function(){ splash.classList.remove('on'); }, 2100);
+  setTimeout(function(){ splash.classList.remove('on'); }, 2200);
   show(
   '<div class="stack seq">'+
-    '<span class="sticker violet">Welcome event · Helsinki</span>'+
-    '<h1 class="display">Eight weeks. One question. Ten seconds left.</h1>'+
+    '<span class="tag accent"><span class="dot"></span> Welcome Event · Helsinki</span>'+
+    '<h1 class="display">Eight weeks. One <span class="serif">question</span>.</h1>'+
     '<div class="flipwrap"><div class="flipper" id="flip">'+
-      '<div class="face front">'+mysteryCard({level:2})+'</div>'+
+      '<div class="face front">'+mysteryCard(2)+'</div>'+
       '<div class="face back">'+
-        '<div class="card tint-yellow center">'+
-          '<span class="sticker pink" style="position:relative;top:-2px">It was Alex</span>'+
-          '<div class="pxbig light" style="margin:14px auto 0">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-          '<h2 class="display" style="margin:14px 0 2px">Alex</h2>'+
-          '<p class="small" style="margin:0">Metropolia UAS &middot; Tourism Management</p>'+
-          '<p class="tiny muted" style="margin:6px 0 0">Formerly known to you as Neon Lighthouse.</p>'+
+        '<div class="card raised center" style="height:100%">'+
+          '<span class="label accent">Mystery connection · revealed</span>'+
+          '<div class="portrait" style="margin:16px auto 0">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+          '<h2 class="display" style="margin:18px 0 4px">Alex</h2>'+
+          '<p class="small muted" style="margin:0">Metropolia University of Applied Sciences</p>'+
+          '<p class="small muted" style="margin:0">Tourism Management</p>'+
+          '<p class="tiny" style="margin:10px 0 0">Known to you for eight weeks as Meridian.</p>'+
         '</div>'+
       '</div>'+
     '</div></div>'+
     '<div id="after"></div>'+
-    '<button class="btn violet" id="go">Reveal my connection</button>'+
+    '<button class="btn accent" id="go">Reveal my connection</button>'+
   '</div>');
 
   var btn=document.getElementById('go');
   btn.onclick=function(){
     if(btn.dataset.done){ S.meet(); return; }
     btn.disabled=true;
-    var wrap=document.querySelector('.flipwrap');
-    var saved=wrap.innerHTML;
-    var n=3;
+    var wrap=document.querySelector('.flipwrap'), saved=wrap.innerHTML, n=3;
     wrap.innerHTML='<div class="count">3</div>';
     var iv=setInterval(function(){
       n--;
@@ -445,20 +429,20 @@ S.event = function(){
       clearInterval(iv);
       wrap.innerHTML=saved;
       var f=wrap.querySelector('.flipper');
-      setTimeout(function(){ f.classList.add('flipped'); confetti(90); PIXEL.trackEyes(app); },140);
+      setTimeout(function(){ f.classList.add('flipped'); confetti(70); },150);
       setTimeout(function(){
         document.getElementById('after').innerHTML=
           '<div class="stack sm rise">'+
-            '<div class="card stack sm">'+
+            '<div class="card">'+
               '<span class="label">You already knew this much</span>'+
-              '<div class="row" style="flex-wrap:wrap;gap:7px">'+
-                '<span class="sticker teal">Travel</span><span class="sticker orange tilt-r">Coffee</span><span class="sticker pink">Live music</span>'+
+              '<div class="row wrap" style="margin-top:10px">'+
+                '<span class="tag">Travel</span><span class="tag">Coffee</span><span class="tag">Live music</span>'+
               '</div>'+
             '</div>'+
-            '<div class="note orange"><b>Their recognition clue</b>"Look for the red scarf."</div>'+
+            '<div class="note accent"><b>Their recognition clue</b>“Look for the red scarf.”</div>'+
           '</div>';
-        btn.disabled=false; btn.textContent='Go find Alex'; btn.className='btn green'; btn.dataset.done='1';
-      },1150);
+        btn.disabled=false; btn.textContent='Go and find Alex'; btn.className='btn'; btn.dataset.done='1';
+      },1200);
     },850);
   };
 };
@@ -466,37 +450,36 @@ S.event = function(){
 S.meet = function(){
   show(
   '<div class="stack seq">'+
-    '<span class="sticker green">Helsinki · Welcome event</span>'+
-    '<h1 class="display">Found each other.</h1>'+
-    '<p class="lead muted" style="margin:0">Eight weeks of pixels, resolved in about four seconds of eye contact.</p>'+
-    '<div class="card duo">'+
-      '<div class="who"><div style="width:76px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
-        '<div class="display" style="font-size:17px;margin-top:6px">Emma</div><span class="tiny muted">Haaga-Helia UAS</span></div>'+
-      '<div class="display" style="font-size:26px">+</div>'+
-      '<div class="who"><div style="width:76px;margin:0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-        '<div class="display" style="font-size:17px;margin-top:6px">Alex</div><span class="tiny muted">Metropolia UAS</span></div>'+
+    '<span class="label">Helsinki · Welcome Event</span>'+
+    '<h1 class="display">You found <span class="serif">each other</span>.</h1>'+
+    '<p class="lead">Eight weeks of not knowing, resolved in about four seconds of eye contact.</p>'+
+    '<div class="card raised duo">'+
+      '<div class="who"><div class="px-tile" style="width:84px">'+px(ME.spec,{level:3,googly:true})+'</div>'+
+        '<div style="font-weight:600;margin-top:8px">Emma</div><span class="tiny">Haaga-Helia UAS</span></div>'+
+      '<div class="label">met</div>'+
+      '<div class="who"><div class="px-tile" style="width:84px">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+        '<div style="font-weight:600;margin-top:8px">Alex</div><span class="tiny">Metropolia UAS</span></div>'+
     '</div>'+
-    '<div class="card flat center" style="border-style:dashed;background:none">'+
-      '<span class="label">Task</span>'+
-      '<div class="display" style="font-size:18px;margin:6px 0 2px">Take the first bad photo together</div>'+
-      '<span class="tiny muted">It goes straight into your RESTO digital passport.</span>'+
+    '<div class="card quiet center">'+
+      '<span class="label">Next</span>'+
+      '<p class="small" style="margin:8px 0 0">Take your first photograph together. It goes into your RESTO digital passport.</p>'+
     '</div>'+
     '<div id="after"></div>'+
-    '<button class="btn green" id="go">We found each other</button>'+
+    '<button class="btn" id="go">We found each other</button>'+
   '</div>');
 
   var btn=document.getElementById('go');
   btn.onclick=function(){
     if(btn.dataset.done){ S.done(); return; }
-    confetti(120);
+    confetti(90);
     document.getElementById('after').innerHTML=
-      '<div class="stack sm rise">'+
-        '<div class="note green"><b>RESTO digital passport</b>Mystery connection — completed.</div>'+
-        '<div class="stamp"><span class="label">RESTO 2027</span>'+
-          '<div class="display" style="font-size:19px;color:var(--green);line-height:1.1;padding:0 14px">Mystery connection</div>'+
-          '<span class="label">Completed</span></div>'+
+      '<div class="stampcard">'+
+        '<div class="seal"><span class="label accent" style="letter-spacing:.06em">2027</span></div>'+
+        '<div><span class="label">RESTO digital passport</span>'+
+          '<div class="display" style="font-size:17px;margin:4px 0 2px">Mystery connection</div>'+
+          '<span class="tiny">Completed · 12 March 2027, Helsinki</span></div>'+
       '</div>';
-    setTimeout(function(){ var s=document.querySelector('.stamp'); if(s) s.classList.add('in'); },100);
+    setTimeout(function(){ var s=document.querySelector('.stampcard'); if(s) s.classList.add('in'); },80);
     btn.textContent='Continue'; btn.dataset.done='1';
   };
 };
@@ -504,17 +487,15 @@ S.meet = function(){
 S.done = function(){
   show(
   '<div class="stack seq center" style="padding-top:20px">'+
-    '<div class="row" style="justify-content:center">'+
-      '<span class="sticker green">Journey complete</span>'+
+    '<span class="tag" style="align-self:center">Journey complete</span>'+
+    '<h1 class="display">One connection made.</h1>'+
+    '<p class="lead">Fifty-nine strangers left. That is what the rest of RESTO is for.</p>'+
+    '<div class="card raised duo">'+
+      '<div class="who"><div class="px-tile" style="width:66px">'+px(ME.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:6px">Emma</div></div>'+
+      '<div class="label">·</div>'+
+      '<div class="who"><div class="px-tile" style="width:66px">'+px(THEM.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:6px">Alex</div></div>'+
     '</div>'+
-    '<h1 class="display">One stranger down.</h1>'+
-    '<p class="lead muted" style="margin:0">Fifty-nine to go. That is what the rest of RESTO is for.</p>'+
-    '<div class="card duo">'+
-      '<div class="who"><div style="width:62px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:4px">Emma</div></div>'+
-      '<div class="display">&harr;</div>'+
-      '<div class="who"><div style="width:62px;margin:0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:4px">Alex</div></div>'+
-    '</div>'+
-    '<div class="note blue" style="text-align:left"><b>What actually happened here</b>Digital curiosity turned into a real handshake. The app did the waiting. The students did the networking.</div>'+
+    '<div class="note quiet" style="text-align:left"><b>What actually happened</b>Digital curiosity became a real conversation. The platform did the waiting; the students did the networking.</div>'+
     '<button class="btn ghost" id="again">Run it again</button>'+
   '</div>');
   on('again', reset);
@@ -522,13 +503,16 @@ S.done = function(){
 
 /* ---------------------------- controls ---------------------------- */
 function reset(){
-  state = { clues:0, words:[], recognition:"I'll be wearing a red scarf." };
+  state = { clues:0, words:[], recognition:'I will be wearing a red scarf.' };
   confettiEl.innerHTML=''; splash.classList.remove('on');
   S.welcome();
 }
 document.getElementById('resetBtn').onclick = reset;
 document.getElementById('howBtn').onclick = function(){
-  alert('Demo mode\n\nIn the real thing the clues unlock in weeks 3, 5 and 7, and the reveal only happens at the welcome event in Helsinki.\n\nHere every wait is removed, so the whole eight-week journey takes about ninety seconds.\n\nPresenter shortcuts: right arrow or enter advances, R resets.');
+  alert('Mystery Networking — prototype\n\n'+
+        'In the real programme the three clues unlock in weeks 3, 5 and 7, and the reveal only happens at the Welcome Event in Helsinki.\n\n'+
+        'Demo mode removes every waiting period, so the full eight-week journey takes about ninety seconds. All participants are fictional.\n\n'+
+        'Presenting: right arrow or enter advances, R restarts.');
 };
 document.addEventListener('keydown', function(e){
   if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT') return;

@@ -1,52 +1,64 @@
 /* ------------------------------------------------------------------ *
- * Pixel people.
+ * Pixel portraits.
  *
- * Every participant gets one 16x16 pixel character, drawn entirely in
- * code, so there are no image assets to lose and every character is
- * unique. The same renderer draws them "unresolved" — downsampled into
- * big colour blocks — which is how a mystery connection appears before
- * the reveal.
+ * Each participant gets one 32x32 character, drawn in code: no image
+ * assets, and no two people look the same. Shading and the outline are
+ * derived automatically from the silhouette, which is what keeps them
+ * looking drawn rather than blocky.
+ *
+ * The same renderer can draw a character at a lower resolution, which
+ * is how a mystery connection appears before the reveal.
  * ------------------------------------------------------------------ */
 (function (root) {
   'use strict';
 
-  var G = 16; // grid is 16 x 16
+  var G = 32;
+  var OUTLINE = '#2A2A33';
 
-  var SKIN   = ['#FBDCC0', '#F4C9A3', '#E0AC7E', '#C3885B', '#9B663F', '#74492C', '#54341F'];
-  var HAIR   = ['#241B14', '#4A2F1C', '#8C5525', '#D39B3C', '#EFE7D8', '#8C3F36', '#2F4E9E',
-                '#7A3F8F', '#1F8A78', '#D6457F', '#464B55', '#F3A6C4', '#37B6E8', '#6BBF59'];
-  var TOP    = ['#3E9BE9', '#F2C230', '#E86AB4', '#F07C2C', '#5FC9C9', '#7C6BE8',
-                '#4CAF6B', '#E4574C', '#2E4A7D', '#F7F3EA', '#9BD45F', '#B98CE8'];
-  var PANTS  = ['#2E3A4C', '#3F5A8A', '#6B4F7A', '#37474F', '#7A5B3C', '#525863'];
-  var SHOES  = ['#1E2430', '#E4574C', '#F5F1E6', '#3E9BE9', '#F2C230'];
-  var ACCENT = ['#1E2430', '#E4574C', '#3E9BE9', '#F2C230', '#E86AB4', '#5FC9C9', '#F07C2C', '#7C6BE8'];
+  var SKIN  = ['#F6D7BE', '#EDC5A4', '#DCA97F', '#C08B5E', '#9C6B44', '#7A4F31', '#5C3A24'];
+  var HAIR  = ['#2B2118', '#4A3222', '#6F4526', '#A9743A', '#D6B276', '#E8DFCF', '#8A3F33',
+               '#3B4A7A', '#6B4C8F', '#2F7A6B', '#B4495F', '#4A4F5A', '#C86F3F', '#8FA6C4'];
+  var WEAR  = ['#5B5BD6', '#7E6BE0', '#A9C8F0', '#C9A9F0', '#A8DFC1', '#F2B8A2',
+               '#E8E4DC', '#3A3A46', '#6E8FA8', '#C25F4E', '#D8C38A', '#4E7A63'];
+  var LEGS  = ['#2F3340', '#3F4A63', '#5A4A3C', '#454A52', '#6A5B75', '#2B3A34'];
+  var SHOE  = ['#23242C', '#C25F4E', '#EDEAE2', '#5B5BD6', '#6E6A60'];
+  var TRIM  = ['#2A2A33', '#5B5BD6', '#C25F4E', '#D8C38A', '#A8DFC1', '#C9A9F0', '#E8E4DC'];
 
-  var HAIR_STYLES = ['short', 'bob', 'long', 'ponytail', 'buzz', 'afro', 'spiky', 'bun'];
-  var ACCESSORIES = ['none', 'none', 'glasses', 'shades', 'headphones', 'beanie', 'cap', 'scarf', 'earrings', 'bloom'];
+  var HAIR_STYLES = ['short', 'bob', 'long', 'ponytail', 'curls', 'crop', 'wave', 'bun', 'braids'];
+  var EXTRAS = ['none', 'none', 'none', 'glasses', 'roundGlasses', 'headphones', 'beanie',
+                'cap', 'scarf', 'earrings', 'collar'];
 
-  var ADJECTIVES = ['Turbo', 'Velvet', 'Midnight', 'Neon', 'Rusty', 'Cosmic', 'Quiet', 'Reckless',
-                    'Glitchy', 'Polite', 'Sleepy', 'Sudden', 'Humble', 'Electric', 'Wandering', 'Feral',
-                    'Golden', 'Crooked', 'Pocket', 'Thunder'];
-  var NOUNS = ['Comet', 'Kettle', 'Lighthouse', 'Tram', 'Pinecone', 'Postcard', 'Compass', 'Sockpuppet',
-               'Harbour', 'Blizzard', 'Dynamo', 'Lantern', 'Sauna', 'Ferry', 'Anchor', 'Aurora',
-               'Cobblestone', 'Windmill', 'Doorbell', 'Paperclip', 'Telescope', 'Jukebox', 'Mitten', 'Sparrow',
-               'Cassette', 'Snowplough', 'Bicycle', 'Balcony', 'Postbox', 'Typewriter'];
+  /* 60 quiet one-word handles. Placeholder set — easy to swap. */
+  var HANDLES = ['Aurora','Atlas','Harbour','Lantern','Compass','Ember','Meridian','Cove','Beacon','Cinder',
+                 'Drift','Fable','Halo','Indigo','Juniper','Kestrel','Lumen','Marlow','Nocturne','Onyx',
+                 'Pebble','Quill','Rune','Solstice','Tide','Umber','Vesper','Willow','Zephyr','Alder',
+                 'Birch','Cobalt','Dune','Echo','Fjord','Glimmer','Hollow','Isle','Jetty','Kite',
+                 'Loom','Mistral','Nimbus','Orbit','Prism','Quartz','Ridge','Sable','Thicket','Tundra',
+                 'Verdant','Wharf','Xenon','Yarrow','Zinc','Aster','Bramble','Cairn','Delta','Fathom'];
 
-  /* deterministic small hash so a seed always gives the same character */
+  /* ------------------------------ colour ---------------------------- */
+  function hex2rgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+  function rgb2hex(c) {
+    return '#' + c.map(function (v) {
+      v = Math.max(0, Math.min(255, Math.round(v))).toString(16);
+      return v.length < 2 ? '0' + v : v;
+    }).join('');
+  }
+  function scale(h, f) { return rgb2hex(hex2rgb(h).map(function (v) { return f > 1 ? v + (255 - v) * (f - 1) : v * f; })); }
+
+  /* --------------------------- randomness --------------------------- */
   function hash(str) {
     var h = 2166136261;
     for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return (h >>> 0);
+    return h >>> 0;
   }
   function picker(seed) {
     var s = hash(String(seed)) || 1;
     return function (list, salt) {
-      s = (Math.imul(s ^ hash(salt || ''), 2654435761) >>> 0) || 7;
+      s = (Math.imul(s ^ hash(salt), 2654435761) >>> 0) || 7;
       return list[s % list.length];
     };
   }
-
-  /** Build the full spec for a character from a seed string. */
   function spec(seed) {
     var p = picker(seed);
     return {
@@ -54,111 +66,171 @@
       skin: p(SKIN, 'skin'),
       hair: p(HAIR, 'hair'),
       hairStyle: p(HAIR_STYLES, 'style'),
-      top: p(TOP, 'top'),
-      pants: p(PANTS, 'pants'),
-      shoes: p(SHOES, 'shoes'),
-      accessory: p(ACCESSORIES, 'acc'),
-      accent: p(ACCENT, 'accent')
+      wear: p(WEAR, 'wear'),
+      legs: p(LEGS, 'legs'),
+      shoe: p(SHOE, 'shoe'),
+      extra: p(EXTRAS, 'extra'),
+      trim: p(TRIM, 'trim')
     };
   }
 
-  /* ---------------------------- drawing ---------------------------- */
-  function blankGrid() {
+  /* ----------------------------- drawing ---------------------------- */
+  function blank() {
     var g = new Array(G);
     for (var y = 0; y < G; y++) { g[y] = new Array(G); for (var x = 0; x < G; x++) g[y][x] = null; }
     return g;
   }
-  function box(g, x0, y0, x1, y1, colour) {
-    for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) {
-      if (y >= 0 && y < G && x >= 0 && x < G) g[y][x] = colour;
-    }
+  function box(g, x0, y0, x1, y1, c) {
+    for (var y = Math.max(0, y0); y <= Math.min(G - 1, y1); y++)
+      for (var x = Math.max(0, x0); x <= Math.min(G - 1, x1); x++) g[y][x] = c;
   }
-  var EYES = { left: [5, 6], right: [9, 6] }; // top-left corner of each 2x2 eye
 
-  function draw(s) {
-    var g = blankGrid();
+  var EYE = { l: [11, 10], r: [18, 10] }; // top-left of each 3x3 eye
 
-    // head, neck, torso, arms, legs
-    box(g, 4, 3, 11, 9, s.skin);
-    box(g, 7, 10, 8, 10, s.skin);
-    box(g, 5, 11, 10, 13, s.top);
-    box(g, 4, 11, 4, 12, s.top);
-    box(g, 11, 11, 11, 12, s.top);
-    box(g, 4, 13, 4, 13, s.skin);
-    box(g, 11, 13, 11, 13, s.skin);
-    box(g, 5, 14, 6, 14, s.pants);
-    box(g, 9, 14, 10, 14, s.pants);
-    box(g, 5, 15, 6, 15, s.shoes);
-    box(g, 9, 15, 10, 15, s.shoes);
+  function body(s) {
+    var g = blank();
+    var hairDark = scale(s.hair, 0.78);
+    var hairLight = scale(s.hair, 1.22);
+    var skinShade = scale(s.skin, 0.9);
 
-    // hair
-    var h = s.hair;
-    switch (s.hairStyle) {
-      case 'buzz':
-        box(g, 4, 2, 11, 3, h); break;
-      case 'bob':
-        box(g, 4, 1, 11, 3, h); box(g, 3, 2, 3, 7, h); box(g, 12, 2, 12, 7, h); break;
-      case 'long':
-        box(g, 4, 1, 11, 3, h); box(g, 3, 2, 3, 10, h); box(g, 12, 2, 12, 10, h); break;
-      case 'ponytail':
-        box(g, 4, 1, 11, 3, h); box(g, 12, 2, 13, 3, h); box(g, 13, 3, 13, 8, h); break;
-      case 'afro':
-        box(g, 3, 1, 12, 3, h); box(g, 2, 2, 2, 5, h); box(g, 13, 2, 13, 5, h); box(g, 4, 0, 11, 0, h); break;
-      case 'spiky':
-        box(g, 4, 2, 11, 3, h);
-        for (var x = 4; x <= 11; x += 2) box(g, x, 1, x, 1, h);
-        break;
-      case 'bun':
-        box(g, 4, 1, 11, 3, h); box(g, 7, 0, 8, 0, h); box(g, 6, 1, 9, 1, h); break;
-      default: // short
-        box(g, 4, 1, 11, 3, h); box(g, 3, 2, 3, 4, h); box(g, 12, 2, 12, 4, h);
+    // long hair sits behind the head
+    if (s.hairStyle === 'long' || s.hairStyle === 'wave' || s.hairStyle === 'braids') {
+      box(g, 7, 6, 8, 22, s.hair); box(g, 23, 6, 24, 22, s.hair);
+      if (s.hairStyle === 'braids') { box(g, 6, 14, 8, 22, s.hair); box(g, 23, 14, 25, 22, s.hair); }
     }
+
+    // legs and shoes
+    box(g, 11, 26, 14, 29, s.legs);
+    box(g, 17, 26, 20, 29, s.legs);
+    box(g, 10, 30, 14, 31, s.shoe);
+    box(g, 17, 30, 21, 31, s.shoe);
+
+    // torso and arms
+    box(g, 12, 19, 19, 19, s.wear);          // sloped shoulders read better than a slab
+    box(g, 10, 20, 21, 26, s.wear);
+    box(g, 8, 21, 9, 26, s.wear);
+    box(g, 22, 21, 23, 26, s.wear);
+    box(g, 8, 27, 9, 28, s.skin);
+    box(g, 22, 27, 23, 28, s.skin);
+
+    // neck and head
+    box(g, 14, 17, 17, 19, skinShade);
+    box(g, 9, 4, 22, 17, s.skin);
+    box(g, 8, 10, 8, 13, s.skin);   // ears
+    box(g, 23, 10, 23, 13, s.skin);
+
+    // hair on top
+    switch (s.hairStyle) {
+      case 'crop':
+        box(g, 9, 3, 22, 6, s.hair); break;
+      case 'bob':
+        box(g, 9, 2, 22, 6, s.hair); box(g, 8, 4, 8, 12, s.hair); box(g, 23, 4, 23, 12, s.hair); break;
+      case 'long':
+        box(g, 9, 2, 22, 6, s.hair); box(g, 8, 4, 8, 14, s.hair); box(g, 23, 4, 23, 14, s.hair); break;
+      case 'ponytail':
+        box(g, 9, 2, 22, 6, s.hair); box(g, 23, 4, 25, 7, s.hair); box(g, 24, 7, 25, 15, s.hair); break;
+      case 'curls':
+        box(g, 8, 1, 23, 6, s.hair); box(g, 7, 3, 7, 9, s.hair); box(g, 24, 3, 24, 9, s.hair);
+        box(g, 10, 0, 21, 1, s.hair); break;
+      case 'wave':
+        box(g, 9, 2, 22, 6, s.hair); box(g, 8, 3, 8, 13, s.hair); box(g, 23, 3, 23, 13, s.hair);
+        box(g, 10, 1, 17, 2, s.hair); break;
+      case 'bun':
+        box(g, 9, 3, 22, 6, s.hair); box(g, 13, 0, 18, 2, s.hair); break;
+      case 'braids':
+        box(g, 9, 2, 22, 6, s.hair); box(g, 8, 4, 8, 13, s.hair); box(g, 23, 4, 23, 13, s.hair); break;
+      default: // short
+        box(g, 9, 2, 22, 6, s.hair); box(g, 8, 4, 8, 9, s.hair); box(g, 23, 4, 23, 9, s.hair);
+    }
+    box(g, 11, 2, 15, 3, hairLight); // a soft highlight so hair is not a flat block
+    box(g, 9, 6, 22, 6, hairDark);
 
     // face
-    box(g, EYES.left[0], EYES.left[1], EYES.left[0] + 1, EYES.left[1] + 1, '#FFFFFF');
-    box(g, EYES.right[0], EYES.right[1], EYES.right[0] + 1, EYES.right[1] + 1, '#FFFFFF');
-    g[EYES.left[1] + 1][EYES.left[0] + 1] = '#1E2430';
-    g[EYES.right[1] + 1][EYES.right[0]] = '#1E2430';
-    box(g, 7, 8, 8, 8, '#C9736B'); // mouth
+    box(g, 11, 8, 13, 8, hairDark);  // brows
+    box(g, 18, 8, 20, 8, hairDark);
+    box(g, EYE.l[0], EYE.l[1], EYE.l[0] + 2, EYE.l[1] + 2, '#FFFFFF');
+    box(g, EYE.r[0], EYE.r[1], EYE.r[0] + 2, EYE.r[1] + 2, '#FFFFFF');
+    box(g, EYE.l[0] + 1, EYE.l[1] + 1, EYE.l[0] + 2, EYE.l[1] + 2, OUTLINE);
+    box(g, EYE.r[0], EYE.r[1] + 1, EYE.r[0] + 1, EYE.r[1] + 2, OUTLINE);
+    box(g, 15, 13, 16, 13, skinShade);                      // nose
+    box(g, 14, 15, 17, 15, scale(s.skin, 0.72));            // mouth
+    box(g, 10, 13, 11, 13, scale(s.skin, 0.94));            // cheeks
+    box(g, 20, 13, 21, 13, scale(s.skin, 0.94));
 
-    // accessory
-    var a = s.accent;
-    switch (s.accessory) {
+    // extras
+    var t = s.trim;
+    switch (s.extra) {
       case 'glasses':
-        box(g, 4, 6, 4, 7, a); box(g, 7, 6, 7, 7, a); box(g, 8, 6, 8, 7, a); box(g, 11, 6, 11, 7, a);
-        box(g, 5, 5, 6, 5, a); box(g, 9, 5, 10, 5, a); box(g, 7, 6, 8, 6, a);
+        box(g, 10, 9, 14, 9, t); box(g, 17, 9, 21, 9, t);
+        box(g, 10, 9, 10, 13, t); box(g, 14, 9, 14, 13, t);
+        box(g, 17, 9, 17, 13, t); box(g, 21, 9, 21, 13, t);
+        box(g, 10, 13, 14, 13, t); box(g, 17, 13, 21, 13, t); box(g, 15, 10, 16, 10, t);
         break;
-      case 'shades':
-        box(g, 4, 6, 11, 7, a); box(g, 5, 5, 6, 5, a); box(g, 9, 5, 10, 5, a); break;
+      case 'roundGlasses':
+        box(g, 11, 9, 13, 9, t); box(g, 18, 9, 20, 9, t);
+        box(g, 10, 10, 10, 12, t); box(g, 14, 10, 14, 12, t);
+        box(g, 17, 10, 17, 12, t); box(g, 21, 10, 21, 12, t);
+        box(g, 11, 13, 13, 13, t); box(g, 18, 13, 20, 13, t); box(g, 15, 11, 16, 11, t);
+        break;
       case 'headphones':
-        box(g, 3, 4, 3, 7, a); box(g, 12, 4, 12, 7, a); box(g, 4, 0, 11, 0, a); box(g, 3, 1, 3, 3, a); box(g, 12, 1, 12, 3, a);
+        box(g, 6, 8, 8, 13, t); box(g, 23, 8, 25, 13, t);
+        box(g, 7, 1, 7, 7, t); box(g, 24, 1, 24, 7, t); box(g, 8, 0, 23, 1, t);
         break;
       case 'beanie':
-        box(g, 4, 1, 11, 3, a); box(g, 3, 3, 12, 3, a); box(g, 7, 0, 8, 0, a); break;
+        box(g, 9, 1, 22, 5, t); box(g, 8, 4, 23, 5, scale(t, 0.85)); box(g, 14, 0, 17, 1, t); break;
       case 'cap':
-        box(g, 4, 1, 11, 3, a); box(g, 4, 4, 13, 4, a); break;
+        box(g, 9, 1, 22, 5, t); box(g, 9, 6, 26, 7, scale(t, 0.85)); break;
       case 'scarf':
-        box(g, 5, 10, 10, 10, a); box(g, 5, 11, 5, 12, a); break;
+        box(g, 11, 17, 20, 19, t); box(g, 12, 20, 14, 24, scale(t, 0.9)); break;
       case 'earrings':
-        g[7][3] = a; g[7][12] = a; break;
-      case 'bloom':
-        g[2][3] = a; g[3][3] = a; g[2][2] = a; break;
+        box(g, 8, 14, 8, 15, t); box(g, 23, 14, 23, 15, t); break;
+      case 'collar':
+        box(g, 12, 19, 19, 20, scale(s.wear, 1.3)); box(g, 15, 20, 16, 22, t); break;
     }
     return g;
   }
 
-  /* ------------------------- pixel resolution ----------------------- */
-  function mix(colours) {
-    var r = 0, g = 0, b = 0, n = 0;
-    for (var i = 0; i < colours.length; i++) {
-      var c = colours[i]; if (!c) continue;
-      r += parseInt(c.slice(1, 3), 16); g += parseInt(c.slice(3, 5), 16); b += parseInt(c.slice(5, 7), 16); n++;
+  /** Volume without hand-painting it: edges facing away from the light go darker. */
+  function shade(g) {
+    var out = blank();
+    for (var y = 0; y < G; y++) for (var x = 0; x < G; x++) {
+      var c = g[y][x];
+      if (!c) continue;
+      if (c === OUTLINE || c === '#FFFFFF') { out[y][x] = c; continue; }
+      var rightEmpty = x === G - 1 || !g[y][x + 1];
+      var belowEmpty = y === G - 1 || !g[y + 1][x];
+      var leftEmpty = x === 0 || !g[y][x - 1];
+      if (rightEmpty) out[y][x] = scale(c, 0.82);
+      else if (belowEmpty) out[y][x] = scale(c, 0.88);
+      else if (leftEmpty) out[y][x] = scale(c, 1.1);
+      else out[y][x] = c;
     }
-    if (!n) return null;
-    var hex = function (v) { v = Math.round(v / n).toString(16); return v.length < 2 ? '0' + v : v; };
-    return '#' + hex(r) + hex(g) + hex(b);
+    return out;
   }
-  /** block = 1 is the sharp character; 8 is four unreadable colour blobs. */
+
+  /** One-pixel outline around the silhouette. */
+  function outline(g) {
+    var out = g.map(function (r) { return r.slice(); });
+    for (var y = 0; y < G; y++) for (var x = 0; x < G; x++) {
+      if (g[y][x]) continue;
+      var near = (y > 0 && g[y - 1][x]) || (y < G - 1 && g[y + 1][x]) ||
+                 (x > 0 && g[y][x - 1]) || (x < G - 1 && g[y][x + 1]);
+      if (near) out[y][x] = OUTLINE;
+    }
+    return out;
+  }
+
+  function draw(s) { return outline(shade(body(s))); }
+
+  /* ------------------------ resolution levels ----------------------- */
+  function mix(list) {
+    var r = 0, g = 0, b = 0, n = 0;
+    for (var i = 0; i < list.length; i++) {
+      if (!list[i]) continue;
+      var c = hex2rgb(list[i]); r += c[0]; g += c[1]; b += c[2]; n++;
+    }
+    return n ? rgb2hex([r / n, g / n, b / n]) : null;
+  }
   function downsample(grid, block) {
     if (block <= 1) return grid;
     var out = [];
@@ -173,61 +245,53 @@
     }
     return out;
   }
-
-  var RESOLUTION = [8, 4, 2, 1]; // level 0 .. 3
+  var RESOLUTION = [8, 4, 2, 1]; // 4x4 blocks -> full portrait
 
   /**
-   * Render a character as inline SVG.
-   *   opts.level   0-3, how resolved the character is (default 3 = sharp)
-   *   opts.googly  eyes follow the pointer (only when fully resolved)
-   *   opts.size    css size in px
+   * Inline SVG for a character.
+   *   opts.level  0-3, how resolved it is (3 = sharp)
+   *   opts.googly pupils follow the pointer (sharp only)
+   *   opts.size   css pixel size
    */
   function svg(s, opts) {
     opts = opts || {};
     var level = opts.level == null ? 3 : Math.max(0, Math.min(3, opts.level));
     var block = RESOLUTION[level];
     var grid = downsample(draw(s), block);
-    var n = grid.length;
-    var unit = G / n;
-    var parts = [];
+    var n = grid.length, unit = G / n, parts = [];
+    var gap = block > 1 ? 0.35 : 0;
+
     for (var y = 0; y < n; y++) for (var x = 0; x < n; x++) {
       var c = grid[y][x];
       if (!c) continue;
-      var isEye = block === 1 && c === '#FFFFFF';
-      if (isEye && opts.googly) continue; // drawn as a tracking eye below
-      var gap = block > 1 ? 0.22 : 0; // low-res blocks sit apart, like a half-loaded image
+      if (block === 1 && opts.googly && c === '#FFFFFF') continue;
       parts.push('<rect x="' + (x * unit + gap / 2) + '" y="' + (y * unit + gap / 2) +
-                 '" width="' + (unit - gap) + '" height="' + (unit - gap) + '" rx="' + (block > 1 ? 0.25 : 0) +
-                 '" fill="' + c + '"/>');
+                 '" width="' + (unit - gap) + '" height="' + (unit - gap) + '" fill="' + c + '"/>');
     }
-    if (block === 1 && opts.googly) {
-      parts.push(eye(EYES.left), eye(EYES.right));
-    }
-    var size = opts.size ? ('width="' + opts.size + '" height="' + opts.size + '"') : 'width="100%" height="100%"';
+    if (block === 1 && opts.googly) parts.push(eyeMarkup(EYE.l), eyeMarkup(EYE.r));
+
+    var size = opts.size ? 'width="' + opts.size + '" height="' + opts.size + '"' : 'width="100%" height="100%"';
     return '<svg class="px" viewBox="0 0 ' + G + ' ' + G + '" ' + size +
            ' shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
            parts.join('') + '</svg>';
   }
-  function eye(pos) {
-    return '<g class="px-eye">' +
-      '<rect x="' + pos[0] + '" y="' + pos[1] + '" width="2" height="2" fill="#FFFFFF"/>' +
-      '<rect class="px-pupil" x="' + (pos[0] + 0.5) + '" y="' + (pos[1] + 0.5) + '" width="1" height="1" fill="#1E2430"/>' +
-      '</g>';
+  function eyeMarkup(p) {
+    return '<g><rect x="' + p[0] + '" y="' + p[1] + '" width="3" height="3" fill="#FFFFFF"/>' +
+      '<rect class="px-pupil" x="' + (p[0] + 0.6) + '" y="' + (p[1] + 1) + '" width="2" height="2" fill="' + OUTLINE + '"/></g>';
   }
 
-  /** Make every pupil on the page follow the pointer. Call once. */
   function trackEyes(scope) {
     var host = scope || document;
-    function move(clientX, clientY) {
-      var pupils = host.querySelectorAll('.px-pupil');
+    if (host.__pxEyes) return; host.__pxEyes = true;
+    function move(cx, cy) {
+      var pupils = document.querySelectorAll('.px-pupil');
       for (var i = 0; i < pupils.length; i++) {
-        var p = pupils[i];
-        var r = p.getBoundingClientRect();
+        var r = pupils[i].getBoundingClientRect();
         if (!r.width) continue;
-        var dx = clientX - (r.left + r.width / 2);
-        var dy = clientY - (r.top + r.height / 2);
+        var dx = cx - (r.left + r.width / 2), dy = cy - (r.top + r.height / 2);
         var d = Math.sqrt(dx * dx + dy * dy) || 1;
-        p.setAttribute('transform', 'translate(' + (dx / d * 0.5).toFixed(2) + ',' + (dy / d * 0.5).toFixed(2) + ')');
+        pupils[i].setAttribute('transform',
+          'translate(' + (dx / d * 0.55).toFixed(2) + ',' + (dy / d * 0.45).toFixed(2) + ')');
       }
     }
     window.addEventListener('mousemove', function (e) { move(e.clientX, e.clientY); }, { passive: true });
@@ -236,31 +300,18 @@
     }, { passive: true });
   }
 
-  /* --------------------------- the cast ---------------------------- */
-  function codename(i) {
-    var a = ADJECTIVES[i % ADJECTIVES.length];
-    var n = NOUNS[(i * 7 + Math.floor(i / NOUNS.length)) % NOUNS.length];
-    return a + ' ' + n;
-  }
-  /** The fixed catalogue every participant claims from. */
+  /** The fixed cast every participant claims from. */
   function catalogue(count) {
-    var out = [], used = {}, i = 0;
-    while (out.length < (count || 60)) {
-      var name = codename(i);
-      if (!used[name]) {
-        used[name] = true;
-        out.push({ id: 'px' + (out.length + 1), codename: name, spec: spec('px' + (out.length + 1) + '|' + name) });
-      }
-      i++;
-      if (i > 5000) break;
+    count = count || 60;
+    var out = [];
+    for (var i = 0; i < count; i++) {
+      var handle = HANDLES[i % HANDLES.length] + (i >= HANDLES.length ? ' ' + (Math.floor(i / HANDLES.length) + 1) : '');
+      out.push({ id: 'px' + (i + 1), handle: handle, spec: spec('px' + (i + 1) + ':' + handle) });
     }
     return out;
   }
 
-  root.PIXEL = {
-    spec: spec, svg: svg, draw: draw, trackEyes: trackEyes,
-    catalogue: catalogue, codename: codename, RESOLUTION: RESOLUTION
-  };
+  root.PIXEL = { spec: spec, draw: draw, svg: svg, trackEyes: trackEyes, catalogue: catalogue, RESOLUTION: RESOLUTION };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 if (typeof module !== 'undefined' && module.exports) module.exports = globalThis.PIXEL;
