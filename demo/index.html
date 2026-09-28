@@ -5,144 +5,133 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Mystery Networking — RESTO 2027</title>
 <meta name="description" content="Interactive prototype of the Mystery Networking participant journey for RESTO 2027." />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23F7F7F5'/><rect x='3' y='6' width='3' height='3' fill='%2317171B'/><rect x='10' y='6' width='3' height='3' fill='%235B5BD6'/></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%230B0B0E'/><rect x='3' y='6' width='3' height='3' fill='%23C8F04B'/><rect x='10' y='6' width='3' height='3' fill='%23F3F2EE'/></svg>" />
 <link rel="stylesheet" href="assets/ui.css" />
 <style>
   .demo-bar{
-    position:sticky;top:0;z-index:60;background:var(--ink);color:var(--paper);
-    font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    position:sticky;top:0;z-index:60;background:var(--accent);color:var(--accent-ink);
+    font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
   }
-  .demo-bar .inner{width:min(600px,100%);margin:0 auto;padding:8px 22px;display:flex;align-items:center;gap:10px}
+  .demo-bar .inner{width:min(620px,100%);margin:0 auto;padding:7px 22px;display:flex;align-items:center;gap:10px}
   .demo-bar button{
-    background:transparent;color:var(--paper);border:1px solid rgba(247,247,245,.32);
-    border-radius:5px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
-    text-transform:uppercase;padding:3px 9px;cursor:pointer;transition:.15s;
+    background:rgba(16,20,10,.16);color:var(--accent-ink);border:0;font-family:var(--mono);
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;cursor:pointer;
+    clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);transition:background .2s var(--ease);
   }
-  .demo-bar button:hover{background:rgba(247,247,245,.14)}
-  .demo-bar .live{width:5px;height:5px;border-radius:50%;background:var(--mint)}
-  .topbar{top:31px}
+  .demo-bar button:hover{background:rgba(16,20,10,.3)}
+  .topbar{top:29px}
 
-  /* the mystery portrait */
-  .portrait{width:min(230px,62vw);margin:0 auto;aspect-ratio:1;border-radius:var(--r);
-            background:var(--paper-3);border:1px solid var(--line);padding:14px;position:relative}
-  .portrait.ink{background:#22222A;border-color:#33333D}
-  .portrait .scan{position:absolute;left:0;right:0;top:0;height:2px;background:var(--accent);opacity:.55;
-                  animation:sweep 2.2s cubic-bezier(.5,0,.5,1) infinite}
-  @keyframes sweep{0%{top:4%}50%{top:94%}100%{top:4%}}
+  .hero{padding:28px 0 8px}
+  .hero h1{font-size:clamp(40px,12.5vw,76px)}
 
-  .slots{display:flex;flex-direction:column;gap:1px;margin-top:14px;border-radius:var(--r-sm);overflow:hidden}
-  .slot{display:flex;justify-content:space-between;gap:12px;padding:9px 12px;background:rgba(247,247,245,.06);
-        font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
-  .slot span{color:rgba(247,247,245,.45)}
-  .slot b{font-weight:400;color:rgba(247,247,245,.9)}
+  .conn{display:flex;align-items:center;gap:15px;padding:15px;background:var(--surface);
+        border:1px solid var(--line);transition:border-color .3s var(--ease), transform .3s var(--ease);
+        clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+  .conn:hover{border-color:var(--line-2);transform:translateX(3px)}
+  .conn.on{border-color:var(--accent-line)}
 
-  .flipwrap{perspective:1400px}
-  .flipper{position:relative;transform-style:preserve-3d;transition:transform 1.05s cubic-bezier(.3,1.05,.35,1)}
-  .flipper.flipped{transform:rotateY(180deg)}
-  .face{backface-visibility:hidden}
-  .face.back{position:absolute;inset:0;transform:rotateY(180deg)}
+  .bub{max-width:80%;padding:11px 14px;font-size:14.5px;line-height:1.5;margin-bottom:9px;
+       background:var(--surface-2);border:1px solid var(--line);opacity:0;transform:translateY(8px);
+       transition:.5s var(--ease)}
+  .bub.in{opacity:1;transform:none}
+  .bub.me{margin-left:auto;background:var(--accent);color:var(--accent-ink);border-color:transparent}
+  .found{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);
+         opacity:0;transform:translateY(6px);transition:.5s var(--ease)}
+  .found.in{opacity:1;transform:none}
+  .found .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+            color:var(--accent);min-width:26px}
 
-  .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{border:1px solid var(--line-2);background:var(--paper-2);border-radius:99px;padding:8px 14px;
-        cursor:pointer;font-size:14px;transition:.15s}
-  .chip:hover{border-color:var(--ink-3)}
-  .chip.sel{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-  .chip[disabled]{opacity:.35;cursor:not-allowed}
+  .portrait{width:min(240px,64vw);margin:0 auto;aspect-ratio:1;background:var(--surface-2);
+            border:1px solid var(--line);padding:16px;position:relative;
+            clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%)}
 
-  .shared{display:flex;align-items:baseline;gap:14px;padding:11px 0;border-top:1px solid var(--line);
-          opacity:0;transform:translateY(6px);transition:.5s cubic-bezier(.2,.8,.2,1)}
-  .shared:first-child{border-top:0}
-  .shared.in{opacity:1;transform:none}
-  .shared .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
-             color:var(--accent);min-width:88px}
+  .count{font-family:var(--display);font-weight:600;font-size:clamp(90px,30vw,150px);
+         letter-spacing:-.06em;text-align:center;line-height:1.3;color:var(--accent);
+         animation:pop .45s var(--ease) both}
 
-  .count{font-family:var(--display);font-weight:800;font-size:96px;letter-spacing:-.05em;text-align:center;
-         line-height:1.6;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
-
-  .splash{position:fixed;inset:0;z-index:80;background:var(--ink);color:var(--paper);display:flex;
-          flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;
-          padding:30px;opacity:0;pointer-events:none;transition:opacity .5s ease}
+  .splash{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;
+          align-items:center;justify-content:center;gap:16px;text-align:center;padding:30px;
+          opacity:0;pointer-events:none;transition:opacity .55s var(--ease)}
   .splash.on{opacity:1}
-  .splash h1{font-size:clamp(28px,9vw,46px);margin:0}
+  .splash h1{font-size:clamp(40px,14vw,90px);margin:0;line-height:.95}
 
-  .duo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
-  .duo .who{text-align:center}
+  .duo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
   .duo > .label{white-space:nowrap;align-self:center}
-  .stampcard{border:1px solid var(--line);border-radius:var(--r);padding:18px;background:var(--paper-2);
-             display:flex;align-items:center;gap:16px;opacity:0;transform:translateY(8px);transition:.6s}
-  .stampcard.in{opacity:1;transform:none}
-  .stampcard .seal{width:64px;height:64px;border-radius:50%;border:1.5px dashed var(--accent);
-                   display:grid;place-items:center;flex:0 0 auto;background:var(--accent-soft)}
+  .who{text-align:center}
 
   .aside{display:none}
-  @media (min-width:1140px){
-    .layout{display:grid;grid-template-columns:600px 300px;gap:40px;justify-content:center;align-items:start}
-    .aside{display:block;padding-top:34px;position:sticky;top:110px}
+  @media (min-width:1180px){
+    .layout{display:grid;grid-template-columns:620px 300px;gap:44px;justify-content:center;align-items:start}
+    .aside{display:block;padding-top:44px;position:sticky;top:120px}
   }
 </style>
 </head>
 <body>
+<canvas id="field"></canvas>
 
-<div class="demo-bar">
-  <div class="inner">
-    <span class="live"></span><span>Demo mode</span>
-    <span class="grow"></span>
-    <button id="howBtn">About</button>
-    <button id="resetBtn">Restart</button>
-  </div>
-</div>
-
-<div class="topbar">
-  <div class="inner">
-    <div class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span> Mystery Networking</div>
-    <span class="grow"></span>
-    <span class="label" id="stepLabel">Clue 0 / 3</span>
-  </div>
-  <div class="steps" style="width:min(600px,100%);margin:0 auto;padding:0 22px 10px" id="steps">
-    <span class="step"><i></i></span><span class="step"><i></i></span><span class="step"><i></i></span>
-  </div>
-</div>
-
-<div class="layout">
-  <div class="wrap" id="app"></div>
-  <aside class="aside">
-    <div class="stack">
-      <div class="card">
-        <span class="label">The concept</span>
-        <p class="small muted" style="margin:8px 0 0">Every participant is matched with one student from another university eight weeks before RESTO. They complete three small tasks together — and stay anonymous until the Welcome Event in Helsinki.</p>
-      </div>
-      <div class="card accent">
-        <span class="label accent">The mechanic</span>
-        <p class="small" style="margin:8px 0 0">Your connection arrives at a quarter of their resolution. Every completed clue loads a little more of them. The last quarter only resolves in person.</p>
-      </div>
-      <div class="card">
-        <span class="label">Why it matters</span>
-        <p class="small muted" style="margin:8px 0 0">The technology is not the experience. It only creates the anticipation — so the first real conversation in Helsinki starts somewhere other than “where are you from”.</p>
-      </div>
-      <p class="tiny">Prototype · fictional participants · about 90 seconds end to end</p>
+<div class="page">
+  <div class="demo-bar">
+    <div class="inner">
+      <span>Demo mode</span><span class="grow"></span>
+      <button id="howBtn">About</button><button id="resetBtn">Restart</button>
     </div>
-  </aside>
+  </div>
+
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span> Mystery Networking</div>
+      <span class="grow"></span>
+      <span class="label" id="stepLabel">Task 0 / 3</span>
+    </div>
+    <div class="steps" style="width:min(620px,100%);margin:0 auto;padding:0 22px 12px" id="steps">
+      <span class="step"><i></i></span><span class="step"><i></i></span><span class="step"><i></i></span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="wrap" id="app"></div>
+    <aside class="aside">
+      <div class="stack">
+        <div class="card">
+          <span class="label">The idea</span>
+          <p class="small muted" style="margin:10px 0 0">Everyone gets two connections eight weeks before RESTO: the person they picked, and the person who picked them. Three small tasks, weeks of chat, and no idea who they are talking to.</p>
+        </div>
+        <div class="card on">
+          <span class="label on">The rule</span>
+          <p class="small" style="margin:10px 0 0">No names, no schools, no photos, no Instagram. The whole thing collapses the moment someone gives it away.</p>
+        </div>
+        <div class="card">
+          <span class="label">Why bother</span>
+          <p class="small muted" style="margin:10px 0 0">By the time they land in Helsinki they have spent two months talking to someone they have never seen. That first handshake starts a long way past “so, where are you from”.</p>
+        </div>
+        <p class="tiny">Prototype · fictional participants · about 90 seconds end to end</p>
+      </div>
+    </aside>
+  </div>
 </div>
 
 <div class="splash" id="splash">
-  <span class="label" style="color:rgba(247,247,245,.5)">Helsinki · March 2027</span>
-  <h1 class="display">The Welcome <span class="serif">Event</span></h1>
-  <p class="lead" style="color:rgba(247,247,245,.62);max-width:330px;margin:0">Eight weeks of not knowing end here.</p>
+  <span class="label on">Helsinki · 12 March 2027</span>
+  <h1 class="display">TONIGHT YOU<br>MEET THEM</h1>
 </div>
 <div class="confetti" id="confetti"></div>
 
 <script src="assets/pixel.js"></script>
+<script src="assets/halftone.js"></script>
 <script>
 (function(){
 "use strict";
 
+HALFTONE.mount(document.getElementById('field'), { gap:15, maxR:3.1, colour:'243,242,238' });
+
 var cast = PIXEL.catalogue(60);
 function byHandle(h){ for(var i=0;i<cast.length;i++) if(cast[i].handle===h) return cast[i]; return cast[0]; }
 
-var ME   = { handle:'Compass',  real:'Emma', uni:'Haaga-Helia University of Applied Sciences', programme:'Hospitality Management', spec:byHandle('Compass').spec };
-var THEM = { handle:'Meridian', real:'Alex', uni:'Metropolia University of Applied Sciences', programme:'Tourism Management',      spec:byHandle('Meridian').spec };
+var ME    = { handle:'Compass',  real:'Emma',  spec:byHandle('Compass').spec };
+var THEM  = { handle:'Meridian', real:'Alex',  spec:byHandle('Meridian').spec };
+var OTHER = { handle:'Lantern',  real:'Noor',  spec:byHandle('Lantern').spec };
 
-var state = { clues:0, words:[], recognition:'I will be wearing a red scarf.' };
+var state = { tasks:0 };
 
 var app = document.getElementById('app');
 var stepsEl = document.getElementById('steps');
@@ -150,376 +139,338 @@ var stepLabel = document.getElementById('stepLabel');
 var splash = document.getElementById('splash');
 var confettiEl = document.getElementById('confetti');
 
-function px(spec,opts){ return PIXEL.svg(spec,opts||{}); }
-function level(){ return Math.min(2, state.clues); }
-function pct(){ return [25,50,75,100][Math.min(3,state.clues)]; }
-
+function px(spec,opts){ return PIXEL.svg(spec, opts||{}); }
 function progress(){
   for(var i=0;i<3;i++){
-    stepsEl.children[i].className = 'step' + (i<state.clues ? ' done' : (i===state.clues ? ' now' : ''));
+    stepsEl.children[i].className='step'+(i<state.tasks?' done':(i===state.tasks?' now':''));
   }
-  stepLabel.textContent = 'Clue ' + state.clues + ' / 3';
+  stepLabel.textContent='Task '+state.tasks+' / 3';
 }
 function show(html){
-  app.innerHTML = html;
+  app.innerHTML=html;
   window.scrollTo({top:0,behavior:'smooth'});
   progress();
+  HALFTONE.reveals('[data-reveal]');
+  PIXEL.trackEyes(document);
 }
 function on(id,fn){ var el=document.getElementById(id); if(el) el.onclick=fn; return el; }
-
+function reveal(list, cls, gap, done){
+  var i=0;
+  (function step(){
+    if(i>=list.length){ if(done) done(); return; }
+    list[i].classList.add(cls); i++;
+    setTimeout(step, gap);
+  })();
+}
 function confetti(n){
-  var cols=['#5B5BD6','#C9A9F0','#A8DFC1','#F2B8A2','#17171B'];
-  for(var i=0;i<(n||50);i++){
+  var cols=['#C8F04B','#FF6B5A','#4EA8F0','#FFC93C','#F3F2EE'];
+  for(var i=0;i<(n||60);i++){
     var p=document.createElement('i');
     p.style.left=Math.random()*100+'%'; p.style.top=(-16-Math.random()*50)+'px';
     p.style.background=cols[i%cols.length];
-    p.style.animationDuration=(1.7+Math.random()*1.5)+'s';
-    p.style.animationDelay=(Math.random()*.45)+'s';
+    p.style.animationDuration=(1.6+Math.random()*1.5)+'s';
+    p.style.animationDelay=(Math.random()*.4)+'s';
     confettiEl.appendChild(p);
-    (function(node){ setTimeout(function(){ node.remove(); },4200); })(p);
+    (function(n){ setTimeout(function(){ n.remove(); },4200); })(p);
   }
 }
 
-/* ---------------------------- screens ----------------------------- */
-var S = {};
+var S={};
 
-S.welcome = function(){
+/* 1 — welcome */
+S.welcome=function(){
   show(
-  '<div class="stack seq">'+
-    '<span class="tag"><span class="dot"></span> RESTO 2027 · Helsinki</span>'+
-    '<h1 class="display">Networking begins <span class="serif">eight weeks</span> before anyone lands in Helsinki.</h1>'+
-    '<p class="lead">You have been matched with one student from another university. You will not find out who they are until the Welcome Event.</p>'+
-    '<div class="card raised row">'+
-      '<div class="px-tile" style="width:86px;flex:0 0 auto">'+px(THEM.spec,{level:0})+'</div>'+
-      '<div><span class="label">Your mystery connection</span>'+
-        '<h3 class="display" style="margin:6px 0 3px">Loaded at 25%</h3>'+
-        '<p class="tiny" style="margin:0">A real participant. Three clues from now, still mostly unknown.</p></div>'+
+  '<div class="stack seq hero">'+
+    '<span class="tag on"><span class="dot live"></span> RESTO 2027</span>'+
+    '<h1 class="display">TWO PEOPLE AT RESTO ARE ABOUT TO MEET YOU.</h1>'+
+    '<p class="lead">You won\'t know who they are. They won\'t know who you are. Eight weeks of that, and then Helsinki.</p>'+
+    '<button class="btn" id="go">Create my account</button>'+
+    '<div class="row wrap" style="margin-top:4px">'+
+      '<span class="tag">3 tasks</span><span class="tag">2 connections</span><span class="tag">0 spoilers</span>'+
     '</div>'+
-    '<button class="btn" id="go">Begin</button>'+
-    '<div class="row wrap" style="gap:7px">'+
-      '<span class="tag">Three clues</span><span class="tag">One connection</span><span class="tag">One reveal</span>'+
-    '</div>'+
-    '<hr class="divider" />'+
+    '<hr class="rule" />'+
     '<div class="row">'+
-      '<div class="px-tile" style="width:54px;flex:0 0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
-      '<div><span class="label">Signed in as</span>'+
-      '<div style="font-weight:600">Compass</div>'+
-      '<span class="tiny">Emma · Haaga-Helia UAS. Your real name stays hidden until the event.</span></div>'+
+      '<div class="px-tile float" style="width:66px;flex:0 0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
+      '<div><span class="label">You are</span>'+
+        '<h3 class="display" style="margin:5px 0 2px">Compass</h3>'+
+        '<span class="tiny">Your real name goes in the vault until the welcome evening.</span></div>'+
     '</div>'+
   '</div>');
   on('go', S.matching);
 };
 
-S.matching = function(){
+/* 2 — matching */
+S.matching=function(){
   show(
-  '<div class="stack center" style="padding-top:52px;align-items:center">'+
-    '<div class="portrait ink float"><div class="scan"></div>'+px(THEM.spec,{level:0})+'</div>'+
-    '<h2 class="display" id="mt" style="margin-top:26px">Finding your connection</h2>'+
-    '<p class="lead" id="ms" style="margin:0">312 participants · 14 universities</p>'+
+  '<div class="stack center" style="padding-top:64px;align-items:center">'+
+    '<div class="px-tile float" style="width:120px">'+px(THEM.spec,{level:3})+'</div>'+
+    '<h2 class="display" id="mt" style="margin-top:32px">Looking for someone</h2>'+
+    '<p class="lead" id="ms" style="margin:0">312 people signed up. One of them is yours.</p>'+
   '</div>');
   var lines=[
-    ['Finding your connection','312 participants · 14 universities'],
-    ['Checking you are not classmates','A mystery connection is always from another university'],
-    ['Matched','One person. No swapping.']
+    ['Looking for someone','312 people signed up. One of them is yours.'],
+    ['Checking you two have never met','Nobody gets matched with their own classmates.'],
+    ['Found them','One pick each. No swapping, no take-backs.']
   ];
   var i=0;
   var iv=setInterval(function(){
     i++;
     var mt=document.getElementById('mt'), ms=document.getElementById('ms');
     if(!mt){ clearInterval(iv); return; }
-    if(i>=lines.length){ clearInterval(iv); setTimeout(S.locked, 750); return; }
+    if(i>=lines.length){ clearInterval(iv); setTimeout(S.matched,800); return; }
     mt.textContent=lines[i][0]; ms.textContent=lines[i][1];
-    mt.classList.remove('fade'); void mt.offsetWidth; mt.classList.add('fade');
-    if(i===lines.length-1){ var sc=document.querySelector('.scan'); if(sc) sc.remove(); }
-  },1200);
+    mt.classList.remove('pop'); void mt.offsetWidth; mt.classList.add('pop');
+  },1250);
 };
 
-function mysteryCard(lv){
-  return '<div class="card ink">'+
-    '<div class="spread"><span class="label">Mystery connection</span>'+
-      '<span class="label">'+[25,50,75,100][lv]+'% resolved</span></div>'+
-    '<div class="portrait ink" style="margin:16px auto 0;background:#1B1B22">'+px(THEM.spec,{level:lv})+'</div>'+
-    '<h2 class="display" style="margin:16px 0 0;text-align:center;color:var(--paper)">'+THEM.handle+'</h2>'+
-    '<div class="slots">'+
-      '<div class="slot"><span>Real name</span><b>Hidden</b></div>'+
-      '<div class="slot"><span>University</span><b>Hidden</b></div>'+
-      '<div class="slot"><span>Photograph</span><b>'+(lv>=2?'Partly loaded':'Not yet')+'</b></div>'+
+/* 3 — two connections */
+S.matched=function(){
+  show(
+  '<div class="stack seq">'+
+    '<span class="tag on"><span class="dot"></span> Week 2</span>'+
+    '<h1 class="display">YOU PICKED MERIDIAN!</h1>'+
+    '<p class="lead">And someone picked you. That\'s two people to talk to before March — and neither of them has any idea who you are.</p>'+
+    '<div class="conn on">'+
+      '<div class="px-tile bare" style="width:58px;flex:0 0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+      '<div class="grow"><h3 class="display" style="margin:0">Meridian</h3>'+
+        '<span class="label" style="letter-spacing:.14em">You picked them</span></div>'+
+      '<span class="label on">New</span>'+
     '</div>'+
-  '</div>';
-}
-
-S.locked = function(){
-  show(
-  '<div class="stack seq">'+
-    '<span class="tag accent"><span class="dot"></span> Matched</span>'+
-    '<h1 class="display">This is <span class="serif">Meridian</span>.</h1>'+
-    '<p class="lead">Somewhere in Finland they are looking at exactly this much of you.</p>'+
-    mysteryCard(0)+
-    '<div class="note accent"><b>Three clues, three weeks</b>Each completed clue loads a little more of them. After all three they are still only three quarters there — the rest resolves in Helsinki.</div>'+
-    '<button class="btn" id="go">Open clue 1</button>'+
+    '<div class="conn">'+
+      '<div class="px-tile bare" style="width:58px;flex:0 0 auto">'+px(OTHER.spec,{level:3,googly:true})+'</div>'+
+      '<div class="grow"><h3 class="display" style="margin:0">Lantern</h3>'+
+        '<span class="label" style="letter-spacing:.14em">They picked you</span></div>'+
+      '<span class="label">Say hi</span>'+
+    '</div>'+
+    '<div class="note on"><b>House rule</b>No names, no schools, no photos, no Instagram. If it slips out, you\'ve spoiled your own reveal.</div>'+
+    '<button class="btn" id="go">Start talking</button>'+
   '</div>');
-  on('go', S.clue1);
+  on('go', S.task1);
 };
 
-S.clue1 = function(){
-  var WORDS=['Curious','Adventurous','Creative','Organised','Social','Calm','Traveller','Early riser'];
+/* 4 — task 1: mutual interests, through chat */
+S.task1=function(){
   show(
   '<div class="stack seq">'+
-    '<span class="label">Clue 1 of 3 · Week 3</span>'+
-    '<h1 class="display">Three words.</h1>'+
-    '<p class="lead">Describe yourself in three words. Not your name, not your university, not your course.</p>'+
-    '<div class="card">'+
-      '<div class="spread" style="margin-bottom:12px"><span class="label">Choose three</span><span class="label" id="cnt">0 / 3</span></div>'+
-      '<div class="chips" id="chips"></div>'+
+    '<div class="spread"><span class="label on">Task 1 · Week 3</span><span class="label">With Meridian</span></div>'+
+    '<h1 class="display">FIND THREE THINGS YOU BOTH LIKE.</h1>'+
+    '<p class="lead">Films, food, terrible taste in music — anything, as long as you both actually mean it. Just talk until you get there.</p>'+
+    '<div class="card flat" id="chat">'+
+      '<div class="bub">so. eight weeks of this and i can\'t even ask your name</div>'+
+      '<div class="bub me">ask me something better then</div>'+
+      '<div class="bub">fine. worst airport coffee you\'ve ever paid actual money for</div>'+
+      '<div class="bub me">Helsinki T2, gate 24. I\'d defend it in court</div>'+
+      '<div class="bub">unbelievable. that\'s one thing in common and it\'s a bad opinion</div>'+
+    '</div>'+
+    '<div class="card" id="found">'+
+      '<span class="label">Found together</span>'+
+      '<div class="found"><span class="k">01</span><span class="small">Coffee, defended badly</span></div>'+
+      '<div class="found"><span class="k">02</span><span class="small">Both interrailed last summer, three days apart</span></div>'+
+      '<div class="found"><span class="k">03</span><span class="small">Flow Festival, already in both calendars</span></div>'+
     '</div>'+
     '<div id="after"></div>'+
-    '<button class="btn" id="go" disabled>Send clue 1</button>'+
+    '<button class="btn" id="go">Play the conversation</button>'+
   '</div>');
 
-  var picked=[], chips=document.getElementById('chips'), cnt=document.getElementById('cnt'), btn=document.getElementById('go');
-  WORDS.forEach(function(w){
-    var c=document.createElement('button'); c.className='chip'; c.textContent=w;
-    c.onclick=function(){
-      var i=picked.indexOf(w);
-      if(i>=0){ picked.splice(i,1); c.classList.remove('sel'); }
-      else { if(picked.length>=3) return; picked.push(w); c.classList.add('sel'); }
-      cnt.textContent=picked.length+' / 3';
-      btn.disabled=picked.length!==3;
-      Array.prototype.forEach.call(chips.children,function(ch){
-        ch.disabled = picked.length>=3 && !ch.classList.contains('sel');
-      });
-    };
-    chips.appendChild(c);
-  });
-
+  var btn=document.getElementById('go');
   btn.onclick=function(){
-    if(btn.dataset.done){ S.clue2(); return; }
-    state.words=picked.slice(); state.clues=1; progress();
+    if(btn.dataset.done){ S.task2(); return; }
+    btn.disabled=true; btn.textContent='Talking…';
+    var bubs=[].slice.call(document.querySelectorAll('.bub'));
+    reveal(bubs,'in',620,function(){
+      var found=[].slice.call(document.querySelectorAll('.found'));
+      reveal(found,'in',520,function(){
+        state.tasks=1; progress(); confetti(24);
+        document.getElementById('after').innerHTML=
+          '<div class="note on pop"><b>Three things. Not bad for two strangers!</b>Task 1 is done for both of you.</div>';
+        btn.disabled=false; btn.textContent='Continue'; btn.dataset.done='1';
+      });
+    });
+  };
+};
+
+/* 5 — task 2 */
+S.task2=function(){
+  show(
+  '<div class="stack seq">'+
+    '<div class="spread"><span class="label on">Task 2 · Week 5</span><span class="label">With Meridian</span></div>'+
+    '<h1 class="display">TWO TRUTHS AND A LIE.</h1>'+
+    '<p class="lead">Send three things about yourself. Two true, one invented. See if they can spot it.</p>'+
+    '<div class="card stack sm">'+
+      '<label class="field"><span class="label">Statement 01</span><input type="text" value="I have broken the same finger three times" /></label>'+
+      '<label class="field"><span class="label">Statement 02</span><input type="text" value="I once served a table of forty on my own" /></label>'+
+      '<label class="field"><span class="label">Statement 03</span><input type="text" value="I can sleep through absolutely anything" /></label>'+
+    '</div>'+
+    '<div id="after"></div>'+
+    '<button class="btn" id="go">Send all three</button>'+
+  '</div>');
+  var btn=document.getElementById('go');
+  btn.onclick=function(){
+    if(btn.dataset.done){ S.task3(); return; }
+    state.tasks=2; progress(); confetti(24);
     document.getElementById('after').innerHTML=
-      '<div class="stack sm rise">'+
-        '<div class="note"><b>Clue 1 sent</b>'+picked.join(' · ')+'</div>'+
-        '<div class="card row">'+
-          '<div class="px-tile" style="width:70px;flex:0 0 auto">'+px(THEM.spec,{level:1})+'</div>'+
-          '<div><span class="label">Meridian answered too</span>'+
-            '<div style="font-weight:600;margin:3px 0">Calm · Traveller · Creative</div>'+
-            '<span class="tiny">Now 50% resolved.</span></div>'+
+      '<div class="stack sm">'+
+        '<div class="note on pop"><b>Meridian guessed the finger!</b>Wrong. It was the table of forty.</div>'+
+        '<div class="card pop row">'+
+          '<div class="px-tile bare" style="width:56px;flex:0 0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+          '<div><span class="label">Meridian</span>'+
+            '<p class="small" style="margin:4px 0 0">“you absolutely cannot sleep through anything, nobody can, this is a lie too”</p></div>'+
         '</div>'+
       '</div>';
     btn.textContent='Continue'; btn.dataset.done='1';
   };
 };
 
-S.clue2 = function(){
-  var SHARED=[
-    ['Travel','Both of you interrailed through Europe last summer.'],
-    ['Coffee','Neither of you is willing to speak before the second cup.'],
-    ['Live music','Flow Festival is already in both calendars.']
-  ];
+/* 6 — task 3 */
+S.task3=function(){
   show(
   '<div class="stack seq">'+
-    '<span class="label">Clue 2 of 3 · Week 5</span>'+
-    '<h1 class="display">What you <span class="serif">share</span>.</h1>'+
-    '<p class="lead">Find three things you have in common — without giving away who you are.</p>'+
-    '<div class="card" id="list"></div>'+
-    '<div id="after"></div>'+
-    '<button class="btn" id="go">Compare answers</button>'+
-  '</div>');
-
-  var list=document.getElementById('list');
-  list.innerHTML = SHARED.map(function(s){
-    return '<div class="shared"><span class="k">'+s[0]+'</span><span class="small">'+s[1]+'</span></div>';
-  }).join('');
-
-  var btn=document.getElementById('go');
-  btn.onclick=function(){
-    if(btn.dataset.done){ S.clue3(); return; }
-    btn.disabled=true; btn.textContent='Comparing…';
-    var rows=list.querySelectorAll('.shared'), i=0;
-    var iv=setInterval(function(){
-      if(i>=rows.length){
-        clearInterval(iv); state.clues=2; progress();
-        document.getElementById('after').innerHTML=
-          '<div class="stack sm rise">'+
-            '<div class="note accent"><b>Three for three</b>You now have more in common with this person than with most of your own course, and you still could not pick them out of a room.</div>'+
-            '<div class="card row">'+
-              '<div class="px-tile" style="width:70px;flex:0 0 auto">'+px(THEM.spec,{level:2})+'</div>'+
-              '<div><span class="label">75% resolved</span><div style="font-weight:600;margin:3px 0">Almost a person</div>'+
-              '<span class="tiny">Almost is doing a lot of work in that sentence.</span></div>'+
-            '</div>'+
-          '</div>';
-        btn.disabled=false; btn.textContent='Open the final clue'; btn.dataset.done='1';
-        return;
-      }
-      rows[i].classList.add('in'); i++;
-    },560);
-  };
-};
-
-S.clue3 = function(){
-  show(
-  '<div class="stack seq">'+
-    '<span class="label">Clue 3 of 3 · Week 7</span>'+
-    '<h1 class="display">How will they <span class="serif">recognise</span> you?</h1>'+
-    '<p class="lead">One room, three hundred students, five minutes. Leave something they can actually spot.</p>'+
-    '<div class="card">'+
-      '<label class="field"><span class="label">Your recognition clue</span>'+
-      '<textarea id="rec" rows="3">'+state.recognition+'</textarea></label>'+
-      '<p class="tiny" style="margin:10px 0 0">Useful: a red scarf, the tallest person at the coffee table. Not useful: “I have brown hair”.</p>'+
+    '<div class="spread"><span class="label on">Task 3 · Week 7</span><span class="label">With Meridian</span></div>'+
+    '<h1 class="display">THREE CLUES SO THEY CAN FIND YOU.</h1>'+
+    '<p class="lead">On the night you get about five minutes to spot each other in a room full of people. Be specific.</p>'+
+    '<div class="card stack sm">'+
+      '<label class="field"><span class="label">Clue 01</span><input type="text" value="Red scarf. I will not take it off all evening" /></label>'+
+      '<label class="field"><span class="label">Clue 02</span><input type="text" value="About 1.60m, so probably below your eye level" /></label>'+
+      '<label class="field"><span class="label">Clue 03</span><input type="text" value="Hovering near the coffee. Always near the coffee" /></label>'+
+      '<p class="tiny" style="margin:0">Not useful: “I have brown hair.” Everyone has brown hair.</p>'+
     '</div>'+
     '<div id="after"></div>'+
-    '<button class="btn" id="go">Send final clue</button>'+
-    '<button class="linkbtn" id="skip" style="display:none">Skip ahead to the Welcome Event</button>'+
+    '<button class="btn" id="go">Send my clues</button>'+
+    '<button class="linkbtn" id="skip" style="display:none">Skip to the welcome evening</button>'+
   '</div>');
-
   var btn=document.getElementById('go'), skip=document.getElementById('skip');
   btn.onclick=function(){
     if(btn.dataset.done){ S.event(); return; }
-    var v=(document.getElementById('rec').value||'').trim();
-    state.recognition = v || 'I will be wearing a red scarf.';
-    state.clues=3; progress();
+    state.tasks=3; progress(); confetti(40);
     document.getElementById('after').innerHTML=
-      '<div class="stack sm rise">'+
-        '<div class="note"><b>All three clues complete</b>Nothing left to do but turn up.</div>'+
-        '<div class="card ink row">'+
-          '<div class="px-tile ink" style="width:70px;flex:0 0 auto">'+px(THEM.spec,{level:2})+'</div>'+
-          '<div><span class="label">Locked</span>'+
-            '<div class="display" style="font-size:17px;margin:3px 0">75% and holding</div>'+
-            '<span class="tiny">The last quarter loads at the Welcome Event.</span></div>'+
+      '<div class="stack sm">'+
+        '<div class="note on pop"><b>All three tasks done!</b>Nothing left now except turning up.</div>'+
+        '<div class="card pop"><span class="label">Their clues, for you</span>'+
+          '<div class="found in" style="border-top:0"><span class="k">01</span><span class="small">Green jacket, too warm for indoors</span></div>'+
+          '<div class="found in"><span class="k">02</span><span class="small">Tall. Annoyingly tall</span></div>'+
+          '<div class="found in"><span class="k">03</span><span class="small">Will be the one talking to the staff</span></div>'+
         '</div>'+
       '</div>';
-    btn.textContent='Wait for the reveal'; btn.className='btn ghost'; btn.dataset.done='1';
+    btn.textContent='Wait for March'; btn.className='btn ghost'; btn.dataset.done='1';
     skip.style.display='block';
   };
   skip.onclick=S.event;
 };
 
-S.event = function(){
+/* 7 — reveal */
+S.event=function(){
   splash.classList.add('on');
-  setTimeout(function(){ splash.classList.remove('on'); }, 2200);
+  setTimeout(function(){ splash.classList.remove('on'); },2300);
   show(
   '<div class="stack seq">'+
-    '<span class="tag accent"><span class="dot"></span> Welcome Event · Helsinki</span>'+
-    '<h1 class="display">Eight weeks. One <span class="serif">question</span>.</h1>'+
-    '<div class="flipwrap"><div class="flipper" id="flip">'+
-      '<div class="face front">'+mysteryCard(2)+'</div>'+
-      '<div class="face back">'+
-        '<div class="card raised center" style="height:100%">'+
-          '<span class="label accent">Mystery connection · revealed</span>'+
-          '<div class="portrait" style="margin:16px auto 0">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-          '<h2 class="display" style="margin:18px 0 4px">Alex</h2>'+
-          '<p class="small muted" style="margin:0">Metropolia University of Applied Sciences</p>'+
-          '<p class="small muted" style="margin:0">Tourism Management</p>'+
-          '<p class="tiny" style="margin:10px 0 0">Known to you for eight weeks as Meridian.</p>'+
-        '</div>'+
-      '</div>'+
-    '</div></div>'+
+    '<span class="tag on"><span class="dot live"></span> Welcome evening · Helsinki</span>'+
+    '<h1 class="display">EIGHT WEEKS. ONE QUESTION.</h1>'+
+    '<div id="stage">'+
+      '<div class="portrait float">'+px(THEM.spec,{level:3})+'</div>'+
+      '<h2 class="display center" style="margin:22px 0 2px">Meridian</h2>'+
+      '<p class="label center">Real name still hidden</p>'+
+    '</div>'+
     '<div id="after"></div>'+
-    '<button class="btn accent" id="go">Reveal my connection</button>'+
+    '<button class="btn" id="go">Reveal my connection</button>'+
   '</div>');
 
   var btn=document.getElementById('go');
   btn.onclick=function(){
     if(btn.dataset.done){ S.meet(); return; }
     btn.disabled=true;
-    var wrap=document.querySelector('.flipwrap'), saved=wrap.innerHTML, n=3;
-    wrap.innerHTML='<div class="count">3</div>';
+    var stage=document.getElementById('stage'); var n=3;
+    stage.innerHTML='<div class="count">3</div>';
     var iv=setInterval(function(){
       n--;
-      if(n>0){ wrap.innerHTML='<div class="count">'+n+'</div>'; return; }
+      if(n>0){ stage.innerHTML='<div class="count">'+n+'</div>'; return; }
       clearInterval(iv);
-      wrap.innerHTML=saved;
-      var f=wrap.querySelector('.flipper');
-      setTimeout(function(){ f.classList.add('flipped'); confetti(70); },150);
+      stage.innerHTML=
+        '<div class="card light center pop">'+
+          '<span class="label" style="color:rgba(11,11,14,.5)">It was</span>'+
+          '<div class="px-tile bare" style="width:150px;margin:14px auto 0">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+          '<h1 class="display" style="margin:18px 0 6px;font-size:46px">ALEX!</h1>'+
+          '<p class="small" style="margin:0;color:rgba(11,11,14,.7)">Metropolia UAS · Tourism Management</p>'+
+          '<p class="tiny" style="margin:8px 0 0;color:rgba(11,11,14,.55)">Eight weeks as Meridian.</p>'+
+        '</div>';
+      confetti(90);
+      PIXEL.trackEyes(document);
       setTimeout(function(){
         document.getElementById('after').innerHTML=
-          '<div class="stack sm rise">'+
-            '<div class="card">'+
-              '<span class="label">You already knew this much</span>'+
-              '<div class="row wrap" style="margin-top:10px">'+
-                '<span class="tag">Travel</span><span class="tag">Coffee</span><span class="tag">Live music</span>'+
-              '</div>'+
-            '</div>'+
-            '<div class="note accent"><b>Their recognition clue</b>“Look for the red scarf.”</div>'+
-          '</div>';
-        btn.disabled=false; btn.textContent='Go and find Alex'; btn.className='btn'; btn.dataset.done='1';
-      },1200);
+          '<div class="note on pop"><b>Look for the red scarf</b>“About 1.60m. Hovering near the coffee. Always near the coffee.”</div>';
+        btn.disabled=false; btn.textContent='Go and find them'; btn.dataset.done='1';
+      },900);
     },850);
   };
 };
 
-S.meet = function(){
+/* 8 — met */
+S.meet=function(){
   show(
   '<div class="stack seq">'+
-    '<span class="label">Helsinki · Welcome Event</span>'+
-    '<h1 class="display">You found <span class="serif">each other</span>.</h1>'+
-    '<p class="lead">Eight weeks of not knowing, resolved in about four seconds of eye contact.</p>'+
-    '<div class="card raised duo">'+
-      '<div class="who"><div class="px-tile" style="width:84px">'+px(ME.spec,{level:3,googly:true})+'</div>'+
-        '<div style="font-weight:600;margin-top:8px">Emma</div><span class="tiny">Haaga-Helia UAS</span></div>'+
-      '<div class="label">met</div>'+
-      '<div class="who"><div class="px-tile" style="width:84px">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-        '<div style="font-weight:600;margin-top:8px">Alex</div><span class="tiny">Metropolia UAS</span></div>'+
+    '<span class="label on">Helsinki · Welcome evening</span>'+
+    '<h1 class="display">FOUND EACH OTHER!</h1>'+
+    '<p class="lead">Eight weeks of typing. Four seconds of eye contact.</p>'+
+    '<div class="card duo">'+
+      '<div class="who"><div class="px-tile bare" style="width:92px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
+        '<h3 class="display" style="margin:10px 0 0">Emma</h3><span class="tiny">Compass</span></div>'+
+      '<div class="label on">met</div>'+
+      '<div class="who"><div class="px-tile bare" style="width:92px;margin:0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+        '<h3 class="display" style="margin:10px 0 0">Alex</h3><span class="tiny">Meridian</span></div>'+
     '</div>'+
-    '<div class="card quiet center">'+
-      '<span class="label">Next</span>'+
-      '<p class="small" style="margin:8px 0 0">Take your first photograph together. It goes into your RESTO digital passport.</p>'+
-    '</div>'+
+    '<div class="card quiet center"><span class="label">Next</span>'+
+      '<p class="small" style="margin:10px 0 0">Take a photo. It goes in your RESTO passport.</p></div>'+
     '<div id="after"></div>'+
     '<button class="btn" id="go">We found each other</button>'+
   '</div>');
-
   var btn=document.getElementById('go');
   btn.onclick=function(){
     if(btn.dataset.done){ S.done(); return; }
-    confetti(90);
+    confetti(110);
     document.getElementById('after').innerHTML=
-      '<div class="stampcard">'+
-        '<div class="seal"><span class="label accent" style="letter-spacing:.06em">2027</span></div>'+
-        '<div><span class="label">RESTO digital passport</span>'+
-          '<div class="display" style="font-size:17px;margin:4px 0 2px">Mystery connection</div>'+
-          '<span class="tiny">Completed · 12 March 2027, Helsinki</span></div>'+
+      '<div class="card on pop row">'+
+        '<div style="width:46px;height:46px;border:1px dashed var(--accent);display:grid;place-items:center;flex:0 0 auto">'+
+          '<span class="label on" style="letter-spacing:.06em">27</span></div>'+
+        '<div><span class="label">RESTO passport</span>'+
+          '<h3 class="display" style="margin:4px 0 2px">Mystery connection — stamped</h3>'+
+          '<span class="tiny">12 March 2027, Helsinki</span></div>'+
       '</div>';
-    setTimeout(function(){ var s=document.querySelector('.stampcard'); if(s) s.classList.add('in'); },80);
     btn.textContent='Continue'; btn.dataset.done='1';
   };
 };
 
-S.done = function(){
+/* 9 — done */
+S.done=function(){
   show(
-  '<div class="stack seq center" style="padding-top:20px">'+
-    '<span class="tag" style="align-self:center">Journey complete</span>'+
-    '<h1 class="display">One connection made.</h1>'+
-    '<p class="lead">Fifty-nine strangers left. That is what the rest of RESTO is for.</p>'+
-    '<div class="card raised duo">'+
-      '<div class="who"><div class="px-tile" style="width:66px">'+px(ME.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:6px">Emma</div></div>'+
-      '<div class="label">·</div>'+
-      '<div class="who"><div class="px-tile" style="width:66px">'+px(THEM.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:6px">Alex</div></div>'+
+  '<div class="stack seq">'+
+    '<span class="tag">Journey complete</span>'+
+    '<h1 class="display">ONE DOWN. ONE STILL WAITING.</h1>'+
+    '<p class="lead">Lantern is somewhere in the same room, looking for a person in a red scarf. Fifty-eight strangers after that — which is what the rest of RESTO is for.</p>'+
+    '<div class="card duo">'+
+      '<div class="who"><div class="px-tile bare" style="width:70px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:8px">Emma</div></div>'+
+      '<div class="label on">·</div>'+
+      '<div class="who"><div class="px-tile bare" style="width:70px;margin:0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:8px">Alex</div></div>'+
     '</div>'+
-    '<div class="note quiet" style="text-align:left"><b>What actually happened</b>Digital curiosity became a real conversation. The platform did the waiting; the students did the networking.</div>'+
+    '<div class="note"><b>What actually happened here</b>Two months of curiosity turned into a conversation that started somewhere past small talk. The platform did the waiting. The students did the networking.</div>'+
     '<button class="btn ghost" id="again">Run it again</button>'+
   '</div>');
   on('again', reset);
 };
 
-/* ---------------------------- controls ---------------------------- */
 function reset(){
-  state = { clues:0, words:[], recognition:'I will be wearing a red scarf.' };
-  confettiEl.innerHTML=''; splash.classList.remove('on');
+  state={tasks:0}; confettiEl.innerHTML=''; splash.classList.remove('on');
   S.welcome();
 }
-document.getElementById('resetBtn').onclick = reset;
-document.getElementById('howBtn').onclick = function(){
+document.getElementById('resetBtn').onclick=reset;
+document.getElementById('howBtn').onclick=function(){
   alert('Mystery Networking — prototype\n\n'+
-        'In the real programme the three clues unlock in weeks 3, 5 and 7, and the reveal only happens at the Welcome Event in Helsinki.\n\n'+
-        'Demo mode removes every waiting period, so the full eight-week journey takes about ninety seconds. All participants are fictional.\n\n'+
-        'Presenting: right arrow or enter advances, R restarts.');
+    'In the real programme the three tasks open in weeks 3, 5 and 7, and identities are only revealed at the welcome evening in Helsinki.\n\n'+
+    'Demo mode removes every wait, so the whole eight weeks takes about ninety seconds. All participants are fictional.\n\n'+
+    'Presenting: right arrow or enter advances, R restarts.');
 };
-document.addEventListener('keydown', function(e){
+document.addEventListener('keydown',function(e){
   if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT') return;
   if(e.key==='r'||e.key==='R'){ reset(); return; }
-  if(e.key==='ArrowRight'||e.key==='Enter'){
-    var b=app.querySelector('.btn:not([disabled])'); if(b) b.click();
-  }
+  if(e.key==='ArrowRight'||e.key==='Enter'){ var b=app.querySelector('.btn:not([disabled])'); if(b) b.click(); }
 });
 
 PIXEL.trackEyes(document);
