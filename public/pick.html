@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Pick someone · Mystery Networking</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23FCFCFB'/><rect x='3' y='6' width='3' height='3' fill='%230E0E12'/><rect x='10' y='6' width='3' height='3' fill='%238B5CF6'/></svg>" />
+<link rel="stylesheet" href="/assets/ui.css" />
+</head>
+<body>
+<script src="/assets/pixel.js"></script>
+<script src="/assets/grain.js"></script>
+<script src="/assets/motion.js"></script>
+<script src="/assets/app.js"></script>
+<style>
+  .screen{min-height:calc(100svh - 150px);display:flex;flex-direction:column;padding:24px 0 34px}
+  .sheet{position:fixed;inset:auto 0 0 0;z-index:70;background:var(--paper-2);border-top:1px solid var(--line-2);
+         padding:22px 24px calc(22px + env(safe-area-inset-bottom));transform:translateY(110%);
+         transition:transform .5s var(--ease);box-shadow:0 -20px 60px -30px rgba(20,21,26,.5)}
+  .sheet.on{transform:none}
+  .sheet .inner{width:min(480px,100%);margin:0 auto}
+</style>
+<script>
+(async function(){
+  const s = await APP.guard('pick'); if(!s) return;
+  APP.shell({ right: 'Week ' + s.settings.currentWeek });
+  let pool = [], picking = false, chosen = null;
+
+  async function load(){
+    const d = await APP.api('/api/pool');
+    pool = d.pool; picking = d.pickingOpen;
+    if (d.alreadyPicked) { location.replace('/hub.html'); return; }
+    draw();
+  }
+
+  function draw(){
+    APP.render(
+      '<div class="screen">'+
+        '<span class="label on" data-rise>Week 2 · first come, first served</span>'+
+        '<h1 class="display" style="margin-top:18px">Pick <span class="serif">one person.</span></h1>'+
+        '<p class="lead" data-rise="340">You get one pick, and you can be picked once. Anyone already taken has gone from the wall.</p>'+
+        (picking ? '' : '<div class="note" data-rise="380"><b>Not open yet</b>The wall opens in week 2.</div>')+
+        '<div class="tile-grid" id="grid" data-rise="400"></div>'+
+        '<p class="tiny" style="margin-top:18px">'+pool.length+' still free</p>'+
+      '</div>'+
+      '<div class="sheet" id="sheet"><div class="inner">'+
+        '<div class="row" id="sheet-who"></div>'+
+        '<div class="row" style="margin-top:18px;gap:10px">'+
+          '<button class="btn grow" id="confirm">Pick them</button>'+
+          '<button class="btn ghost" id="cancel">Not yet</button>'+
+        '</div>'+
+      '</div></div>', function(){
+        const grid = document.getElementById('grid');
+        grid.innerHTML = pool.map(p =>
+          '<div class="tile" data-id="'+p.id+'">'+PIXEL.svg(p.avatar.spec,{level:3,googly:true})+
+          '<span class="nm">'+APP.escape(p.alias)+'</span></div>').join('');
+        const sheet = document.getElementById('sheet');
+        grid.onclick = (e) => {
+          const tile = e.target.closest('.tile'); if (!tile || !picking) return;
+          chosen = pool.find(p => String(p.id) === tile.dataset.id);
+          document.getElementById('sheet-who').innerHTML =
+            '<div class="px-tile" style="width:74px;flex:0 0 auto">'+PIXEL.svg(chosen.avatar.spec,{level:3,googly:true})+'</div>'+
+            '<div><span class="label">Pick</span><h3 class="display" style="margin:4px 0 2px">'+APP.escape(chosen.alias)+'</h3>'+
+            '<span class="tiny">You cannot change this later.</span></div>';
+          sheet.classList.add('on');
+        };
+        document.getElementById('cancel').onclick = () => sheet.classList.remove('on');
+        document.getElementById('confirm').onclick = async (e) => {
+          e.target.disabled = true;
+          try {
+            await APP.api('/api/pick', { targetId: chosen.id });
+            APP.confetti(60);
+            setTimeout(() => location.href = '/hub.html', 650);
+          } catch (err) {
+            APP.toast(err.message);
+            sheet.classList.remove('on');
+            e.target.disabled = false;
+            load();
+          }
+        };
+      });
+  }
+  load().catch(e => APP.toast(e.message));
+})();
+</script>
+</body></html>

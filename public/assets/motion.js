@@ -80,6 +80,10 @@
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
     for (var j = 0; j < items.length; j++) io.observe(items[j]);
+    // safety net: nothing should stay invisible because an observer never fired
+    setTimeout(function () {
+      for (var k = 0; k < items.length; k++) items[k].classList.add('in');
+    }, 2600);
   }
 
   /* --------------------------- curtain ------------------------------ */

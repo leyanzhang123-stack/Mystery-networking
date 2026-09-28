@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "build:demo": "node tools/build-demo.js"
+    "build:demo": "node tools/build-demo.js",
+    "seed": "node tools/seed.js"
   },
   "devDependencies": {
     "playwright": "^1.49.1"

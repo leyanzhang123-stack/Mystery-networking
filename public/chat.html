@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Chat · Mystery Networking</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23FCFCFB'/><rect x='3' y='6' width='3' height='3' fill='%230E0E12'/><rect x='10' y='6' width='3' height='3' fill='%238B5CF6'/></svg>" />
+<link rel="stylesheet" href="/assets/ui.css" />
+</head>
+<body>
+<script src="/assets/pixel.js"></script>
+<script src="/assets/grain.js"></script>
+<script src="/assets/motion.js"></script>
+<script src="/assets/app.js"></script>
+<style>
+  .peerbar{display:flex;align-items:center;gap:12px;padding:12px 0 14px;border-bottom:1px solid var(--line);
+           position:sticky;top:0;background:var(--paper);z-index:20}
+  .peerbar .px-tile{width:46px;flex:0 0 auto}
+  .rule-strip{background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:3px;
+              padding:10px 12px;font-size:12.5px;line-height:1.5;margin:12px 0}
+  .mission-panel{margin:16px 0 8px}
+  .answers{display:flex;flex-direction:column;gap:9px}
+</style>
+<script>
+(async function(){
+  const s = await APP.guard('chat'); if(!s) return;
+  APP.shell({ right: 'Week ' + s.settings.currentWeek });
+  const connId = Number(new URLSearchParams(location.search).get('c'));
+  const defs = s.tasks, settings = s.settings;
+
+  let conn = null, lastId = 0, timer = null;
+
+  function currentDef(){
+    const open = defs.filter(d => settings.currentWeek >= d.week);
+    const undone = open.find(d => !(conn.tasks.find(t => t.week === d.week) || {}).mine);
+    return undone || open[open.length - 1] || null;
+  }
+
+  function missionPanel(){
+    const d = currentDef();
+    if (!d) return '<div class="note" data-rise="300"><b>Nothing open yet</b>The first mission arrives in week 3. Until then, just talk.</div>';
+    const mine = (conn.tasks.find(t => t.week === d.week) || {}).mine;
+    const peerDone = (conn.tasks.find(t => t.week === d.week) || {}).peerDone;
+    const head =
+      '<div class="spread" style="margin-bottom:10px"><span class="label on">Mission · week '+d.week+'</span>'+
+      (peerDone ? '<span class="label">They have answered</span>' : '<span class="label">They have not answered</span>')+'</div>'+
+      '<h3 class="display" style="margin:0 0 8px">'+APP.escape(d.title)+'</h3>'+
+      '<p class="small muted" style="margin:0 0 14px">'+APP.escape(d.intro)+'</p>';
+
+    if (mine) {
+      const body = mine.items
+        ? mine.items.map((v,i) => '<div class="found in"><span class="k">0'+(i+1)+'</span><span class="small">'+APP.escape(v)+'</span></div>').join('')
+        : '<p class="small" style="margin:0">'+APP.escape(mine.text)+'</p>';
+      return '<div class="card on mission-panel" data-rise="300">'+head+
+        '<div class="note" style="background:var(--paper-2)"><b>Sent</b>'+body+'</div>'+
+        '<button class="linkbtn" id="redo" style="padding-left:0">Change my answer</button></div>';
+    }
+    const fields = d.kind === 'list'
+      ? '<div class="answers" id="answers">'+Array.from({length:d.count}).map((_,i) =>
+          '<input type="text" class="ans" maxlength="140" placeholder="'+APP.escape(d.placeholder)+'" />').join('')+'</div>'
+      : '<textarea id="answer" rows="4" placeholder="'+APP.escape(d.placeholder)+'"></textarea>';
+    return '<div class="card mission-panel" data-rise="300">'+head+fields+
+      '<button class="btn wide" id="send-task" style="margin-top:14px">Send my answer</button></div>';
+  }
+
+  function paint(){
+    APP.render(
+      '<div class="peerbar">'+
+        '<a class="linkbtn" href="/hub.html" style="padding:0 4px 0 0">Back</a>'+
+        '<div class="px-tile bare" style="width:44px;flex:0 0 auto">'+APP.avatar(conn.peer.avatar)+'</div>'+
+        '<div class="grow"><h3 class="display" style="margin:0">'+APP.escape(conn.peer.alias)+'</h3>'+
+        '<span class="label">'+(conn.youPicked ? 'You picked them' : 'They picked you')+'</span></div>'+
+      '</div>'+
+      '<div class="rule-strip">Still no names, no schools, no photos. That is the whole game.</div>'+
+      missionPanel()+
+      '<div class="chat" id="chat"></div>'+
+      '<div class="composer">'+
+        '<input type="text" id="msg" maxlength="2000" placeholder="Write something…" autocomplete="off" />'+
+        '<button class="btn" id="send">Send</button>'+
+      '</div>', wire);
+  }
+
+  function wire(){
+    const box = document.getElementById('msg'), send = document.getElementById('send');
+    const post = async () => {
+      const body = box.value.trim(); if (!body) return;
+      box.value = ''; send.disabled = true;
+      try { const r = await APP.api('/api/messages', { connId, body }); addMessages([r.message]); }
+      catch (e) { APP.toast(e.message); }
+      send.disabled = false; box.focus();
+    };
+    send.onclick = post;
+    box.addEventListener('keydown', e => { if (e.key === 'Enter') post(); });
+
+    const redo = document.getElementById('redo');
+    if (redo) redo.onclick = () => {
+      const d = currentDef();
+      conn.tasks = conn.tasks.map(t => t.week === d.week ? Object.assign({}, t, { mine: null }) : t);
+      paint();
+    };
+
+    const st = document.getElementById('send-task');
+    if (st) st.onclick = async () => {
+      const d = currentDef();
+      st.disabled = true;
+      try {
+        const payload = d.kind === 'list'
+          ? { connId, week: d.week, items: [].slice.call(document.querySelectorAll('.ans')).map(i => i.value) }
+          : { connId, week: d.week, text: document.getElementById('answer').value };
+        const r = await APP.api('/api/task', payload);
+        conn.tasks = conn.tasks.map(t => t.week === d.week ? Object.assign({}, t, { mine: r.payload }) : t);
+        APP.confetti(40);
+        paint();
+      } catch (e) { APP.toast(e.message); st.disabled = false; }
+    };
+
+    loadMessages(true);
+  }
+
+  function addMessages(list){
+    const chat = document.getElementById('chat');
+    if (!chat) return;
+    list.forEach(m => {
+      lastId = Math.max(lastId, m.id);
+      const el = document.createElement('div');
+      el.className = 'msg' + (m.mine ? ' mine' : '');
+      const when = new Date(m.at);
+      el.innerHTML = APP.escape(m.body) +
+        '<span class="when">' + when.toLocaleDateString(undefined,{day:'numeric',month:'short'}) + ' · ' +
+        when.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}) + '</span>';
+      chat.appendChild(el);
+    });
+    if (list.length) window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  async function loadMessages(reset){
+    if (reset) lastId = 0;
+    try {
+      const d = await APP.api('/api/messages?connId=' + connId + '&after=' + lastId);
+      addMessages(d.messages);
+    } catch (e) { /* keep quiet, try again next tick */ }
+  }
+
+  try {
+    const d = await APP.api('/api/connections');
+    conn = d.connections.find(c => c.id === connId);
+    if (!conn) { location.replace('/hub.html'); return; }
+  } catch (e) { APP.toast(e.message); return; }
+
+  paint();
+  timer = setInterval(() => loadMessages(false), 4000);
+  window.addEventListener('beforeunload', () => clearInterval(timer));
+})();
+</script>
+</body></html>

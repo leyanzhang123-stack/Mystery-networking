@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>The reveal · Mystery Networking</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23FCFCFB'/><rect x='3' y='6' width='3' height='3' fill='%230E0E12'/><rect x='10' y='6' width='3' height='3' fill='%238B5CF6'/></svg>" />
+<link rel="stylesheet" href="/assets/ui.css" />
+</head>
+<body>
+<script src="/assets/pixel.js"></script>
+<script src="/assets/grain.js"></script>
+<script src="/assets/motion.js"></script>
+<script src="/assets/app.js"></script>
+<style>
+  @media (min-width:1040px){ .wrap{width:min(1080px,100%) !important;border:0 !important;background:none !important} }
+  .pairs{display:grid;grid-template-columns:1fr;gap:14px;margin-top:22px}
+  @media (min-width:720px){ .pairs{grid-template-columns:1fr 1fr} }
+  .side{text-align:center}
+  .side .px-tile{width:74px;margin:0 auto}
+  .side h4{font-family:var(--display);font-weight:800;font-size:16px;letter-spacing:-.02em;margin:8px 0 2px}
+  .link{font-family:var(--body);font-weight:600;font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)}
+</style>
+<script>
+(async function(){
+  APP.shell({ right: 'Reveal' });
+  let d;
+  try { d = await APP.api('/api/reveal'); } catch (e) { APP.toast(e.message); return; }
+
+  if (!d.published) {
+    APP.render(
+      '<div style="padding:60px 0;min-height:60svh">'+
+        '<span class="label on" data-rise>Sealed</span>'+
+        '<h1 class="display" style="margin-top:16px">Not <span class="serif">yet.</span></h1>'+
+        '<p class="lead" data-rise="320">Every real name and face on this page stays sealed until the welcome evening in Helsinki.</p>'+
+        '<a class="linkbtn" href="/hub.html">Back to my journey</a>'+
+      '</div>');
+    return;
+  }
+
+  const side = (p) => '<div class="side">'+
+    '<div class="px-tile">'+PIXEL.svg(p.avatar.spec,{level:3,googly:true})+'</div>'+
+    '<h4>'+APP.escape(p.realName || '—')+'</h4>'+
+    '<span class="label">'+APP.escape(p.alias)+'</span>'+
+    (p.realPhoto ? '<img class="photo" style="margin-top:10px" src="'+p.realPhoto+'" alt="" />'
+                 : '<div class="photo ph" style="margin-top:10px">no photo</div>')+
+  '</div>';
+
+  APP.render(
+    '<div style="padding:26px 0 70px">'+
+      '<span class="label on" data-rise>'+APP.escape(d.eventName)+' · Helsinki</span>'+
+      '<h1 class="display" style="margin-top:16px">Everyone, <span class="serif">finally.</span></h1>'+
+      '<p class="lead" data-rise="320">'+d.pairs.length+' connections. Eight weeks of not knowing. Go and find them.</p>'+
+      '<div class="pairs">'+d.pairs.map((pr,i) =>
+        '<div class="pair-card" data-rise="'+(340 + i*30)+'">'+side(pr.people[0])+
+        '<span class="link">met</span>'+side(pr.people[1])+'</div>').join('')+'</div>'+
+      '<div style="margin-top:24px"><a class="linkbtn" href="/hub.html">Back to my journey</a></div>'+
+    '</div>', () => APP.confetti(70));
+})();
+</script>
+</body></html>

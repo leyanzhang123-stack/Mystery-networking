@@ -72,8 +72,8 @@ const DEFAULT_SETTINGS = {
   picking_open: '0',
   reveal_published: '0',
   event_name: 'RESTO 2027',
-  week5_title: 'Two Truths & a Lie',
-  week5_intro: 'Send your connection three statements about yourself: two true, one invented. Guess theirs. Still no names, no universities, no photos.'
+  week5_title: 'Two truths and a lie',
+  week5_intro: 'Send three statements about yourself. Two true, one invented. See if they can spot the lie, then guess theirs. Still no names, no schools, no photos.'
 };
 const insertSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
 for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) insertSetting.run(k, v);
