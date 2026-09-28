@@ -16,19 +16,37 @@
   /** Split a heading into lines and let each one rise from behind a mask. */
   function splitLines(el) {
     if (!el || el.dataset.split === '1') return;
-    var html = el.innerHTML;
-    var words = el.textContent.trim().split(/\s+/);
-    el.innerHTML = words.map(function (w) { return '<span class="w">' + w + '</span>'; }).join(' ');
+    // Keep inline markup (an italic phrase, a highlighted word) attached to its
+    // words, otherwise splitting would flatten the whole heading.
+    var words = [];
+    [].slice.call(el.childNodes).forEach(function (node) {
+      var cls = node.nodeType === 1 ? (node.getAttribute('class') || '') : '';
+      var text = (node.textContent || '').trim();
+      if (!text) return;
+      text.split(/\s+/).forEach(function (w) {
+        // a stray full stop after an italic phrase should not become its own line
+        if (/^[.,!?;:]+$/.test(w) && words.length) { words[words.length - 1].w += w; return; }
+        words.push({ w: w, cls: cls });
+      });
+    });
+    if (!words.length) return;
+
+    el.innerHTML = words.map(function (o) {
+      return '<span class="w' + (o.cls ? ' ' + o.cls : '') + '">' + o.w + '</span>';
+    }).join(' ');
+
     var spans = [].slice.call(el.querySelectorAll('.w'));
     var lines = [], current = null, top = null;
-    spans.forEach(function (s) {
+    spans.forEach(function (s, i) {
       var t = s.offsetTop;
       if (top === null || Math.abs(t - top) > 4) { current = []; lines.push(current); top = t; }
-      current.push(s.textContent);
+      current.push(words[i]);
     });
-    if (!lines.length) { el.innerHTML = html; return; }
+
     el.innerHTML = lines.map(function (l) {
-      return '<span class="line"><span class="line-i">' + l.join(' ') + '</span></span>';
+      return '<span class="line"><span class="line-i">' +
+        l.map(function (o) { return o.cls ? '<span class="' + o.cls + '">' + o.w + '</span>' : o.w; }).join(' ') +
+        '</span></span>';
     }).join('');
     el.dataset.split = '1';
   }
