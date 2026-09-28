@@ -5,86 +5,68 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Mystery Networking — RESTO 2027</title>
 <meta name="description" content="Interactive prototype of the Mystery Networking participant journey for RESTO 2027." />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%230B0B0E'/><rect x='3' y='6' width='3' height='3' fill='%23C8F04B'/><rect x='10' y='6' width='3' height='3' fill='%23F3F2EE'/></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23F5F4EF'/><rect x='3' y='6' width='3' height='3' fill='%2314151A'/><rect x='10' y='6' width='3' height='3' fill='%230E7C5A'/></svg>" />
 <link rel="stylesheet" href="assets/ui.css" />
 <style>
-  .demo-bar{
-    position:sticky;top:0;z-index:60;background:#000;color:var(--text-3);
-    border-bottom:1px solid var(--line);
-    font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
-  }
-  .demo-bar .inner{width:min(1180px,100%);margin:0 auto;padding:9px clamp(22px,5vw,64px);display:flex;align-items:center;gap:12px}
-  .demo-bar button{
-    background:transparent;color:var(--text-2);border:1px solid var(--line-2);font-family:var(--mono);
-    font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;cursor:pointer;
-    clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);transition:background .2s var(--ease);
-  }
-  .demo-bar button:hover{color:var(--text);border-color:var(--text-3)}
-  .topbar{top:29px}
+  .demo-bar{position:sticky;top:0;z-index:60;background:var(--ink);color:rgba(245,244,239,.6);
+    font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase}
+  .demo-bar .inner{width:min(1180px,100%);margin:0 auto;padding:9px clamp(22px,5vw,64px);
+    display:flex;align-items:center;gap:12px}
+  .demo-bar button{background:transparent;color:rgba(245,244,239,.7);border:1px solid rgba(245,244,239,.25);
+    font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    padding:4px 10px;cursor:pointer;transition:.25s var(--ease)}
+  .demo-bar button:hover{color:#fff;border-color:rgba(245,244,239,.6)}
+  .swatches{display:flex;gap:5px}
+  .swatch{width:14px;height:14px;border:1px solid rgba(245,244,239,.3);cursor:pointer;padding:0;
+    transition:transform .25s var(--ease)}
+  .swatch:hover{transform:scale(1.25)}
+  .topbar{top:33px}
 
-  .hero{min-height:calc(100svh - 190px);display:flex;flex-direction:column;justify-content:center;padding:40px 0}
+  .hero{min-height:calc(100svh - 200px);display:flex;flex-direction:column;justify-content:center;padding:40px 0}
   .hero h1{max-width:17ch}
   .hero p{max-width:46ch}
   .hero .btn{align-self:flex-start}
 
-  .conn{display:flex;align-items:center;gap:15px;padding:15px;background:var(--surface);
-        border:1px solid var(--line);transition:border-color .3s var(--ease), transform .3s var(--ease);
-        clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
-  .conn:hover{border-color:var(--line-2);transform:translateX(3px)}
-  .conn.on{border-color:var(--accent-line)}
+  .toast{position:fixed;right:clamp(16px,4vw,44px);bottom:clamp(16px,4vw,44px);
+    width:min(320px,calc(100vw - 32px));background:var(--paper-2);border:1px solid var(--line);
+    padding:18px;z-index:50;box-shadow:0 20px 50px -30px rgba(20,21,26,.5);
+    clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%);
+    animation:toastIn .8s var(--ease) .6s both}
+  .toast-bar{position:absolute;left:0;top:0;height:2px;width:44%;background:var(--accent)}
+  @keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 
-  .bub{max-width:80%;padding:11px 14px;font-size:14.5px;line-height:1.5;margin-bottom:9px;
-       background:var(--surface-2);border:1px solid var(--line);opacity:0;transform:translateY(8px);
-       transition:.5s var(--ease)}
+  .conn{display:flex;align-items:center;gap:16px;padding:16px;background:var(--paper-2);
+    border:1px solid var(--line);cursor:pointer;
+    clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%);
+    transition:transform .4s var(--ease), border-color .3s var(--ease)}
+  .conn:hover{transform:translateX(6px);border-color:var(--line-2)}
+  .conn.on{border-color:var(--accent-line);background:var(--accent-soft)}
+
+  .bub{max-width:78%;padding:12px 15px;font-size:14.5px;line-height:1.5;margin-bottom:10px;
+    background:var(--paper-3);opacity:0;transform:translateY(10px);transition:.55s var(--ease)}
   .bub.in{opacity:1;transform:none}
-  .bub.me{margin-left:auto;background:var(--accent);color:var(--accent-ink);border-color:transparent}
-  .found{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);
-         opacity:0;transform:translateY(6px);transition:.5s var(--ease)}
+  .bub.me{margin-left:auto;background:var(--ink);color:var(--paper)}
+
+  .found{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);
+    opacity:0;transform:translateX(-10px);transition:.55s var(--ease)}
   .found.in{opacity:1;transform:none}
-  .found .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
-            color:var(--accent);min-width:26px}
+  .found .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--accent);min-width:24px}
 
-  .portrait{width:min(240px,64vw);margin:0 auto;aspect-ratio:1;background:var(--surface-2);
-            border:1px solid var(--line);padding:16px;position:relative;
-            clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%)}
+  .portrait{width:min(230px,62vw);aspect-ratio:1;background:var(--paper-3);border:1px solid var(--line);
+    padding:16px;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%)}
 
-  .count{font-family:var(--display);font-weight:600;font-size:clamp(90px,30vw,150px);
-         letter-spacing:-.06em;text-align:center;line-height:1.3;color:var(--accent);
-         animation:pop .45s var(--ease) both}
+  .count{font-family:var(--display);font-weight:600;font-size:clamp(90px,26vw,170px);letter-spacing:-.06em;
+    text-align:center;line-height:1.2;color:var(--accent);animation:pop .5s var(--ease) both}
 
-  .splash{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;
-          align-items:center;justify-content:center;gap:16px;text-align:center;padding:30px;
-          opacity:0;pointer-events:none;transition:opacity .55s var(--ease)}
+  .splash{position:fixed;inset:0;z-index:80;background:var(--ink);color:var(--paper);display:flex;
+    flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:30px;
+    opacity:0;pointer-events:none;transition:opacity .6s var(--ease)}
   .splash.on{opacity:1}
-  .splash h1{font-size:clamp(40px,14vw,90px);margin:0;line-height:.95}
+  .splash h1{font-size:clamp(42px,12vw,110px);margin:0;line-height:.95;color:var(--paper)}
 
-  .duo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+  .duo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px}
   .duo > .label{white-space:nowrap;align-self:center}
   .who{text-align:center}
-
-  .aside{display:none}
-  .toast{
-    position:fixed;right:clamp(16px,4vw,44px);bottom:clamp(16px,4vw,44px);width:min(330px,calc(100vw - 32px));
-    background:rgba(21,21,28,.92);backdrop-filter:blur(12px);border:1px solid var(--line);
-    padding:18px;z-index:50;
-    clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%);
-    animation:toastIn .7s var(--ease) .5s both;
-  }
-  .toast-bar{position:absolute;left:0;top:0;height:2px;width:46%;background:var(--accent)}
-  @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-  @media (min-width:1180px){
-    .layout{display:block}
-    .aside{display:none}
-  .toast{
-    position:fixed;right:clamp(16px,4vw,44px);bottom:clamp(16px,4vw,44px);width:min(330px,calc(100vw - 32px));
-    background:rgba(21,21,28,.92);backdrop-filter:blur(12px);border:1px solid var(--line);
-    padding:18px;z-index:50;
-    clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%);
-    animation:toastIn .7s var(--ease) .5s both;
-  }
-  .toast-bar{position:absolute;left:0;top:0;height:2px;width:46%;background:var(--accent)}
-  @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-  }
 </style>
 </head>
 <body>
@@ -93,7 +75,9 @@
 <div class="page">
   <div class="demo-bar">
     <div class="inner">
-      <span>Demo mode</span><span class="grow"></span>
+      <span>Demo mode</span>
+      <span class="grow"></span>
+      <span class="swatches" id="swatches"></span>
       <button id="howBtn">About</button><button id="resetBtn">Restart</button>
     </div>
   </div>
@@ -102,89 +86,89 @@
     <div class="inner">
       <div class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span> Mystery Networking</div>
       <span class="grow"></span>
-      <span class="label" id="stepLabel">Task 0 / 3</span>
+      <span class="label" id="stepLabel">Mission 0 / 3</span>
     </div>
     <div class="steps" style="width:min(1180px,100%);margin:0 auto;padding:0 clamp(22px,5vw,64px) 14px" id="steps">
       <span class="step"><i></i></span><span class="step"><i></i></span><span class="step"><i></i></span>
     </div>
   </div>
 
-  <div class="layout">
-    <div class="wrap" id="app"></div>
-    <aside class="aside">
-      <div class="stack">
-        <div class="card">
-          <span class="label">The idea</span>
-          <p class="small muted" style="margin:10px 0 0">Everyone gets two connections eight weeks before RESTO: the person they picked, and the person who picked them. Three small tasks, weeks of chat, and no idea who they are talking to.</p>
-        </div>
-        <div class="card on">
-          <span class="label on">The rule</span>
-          <p class="small" style="margin:10px 0 0">No names, no schools, no photos, no Instagram. The whole thing collapses the moment someone gives it away.</p>
-        </div>
-        <div class="card">
-          <span class="label">Why bother</span>
-          <p class="small muted" style="margin:10px 0 0">By the time they land in Helsinki they have spent two months talking to someone they have never seen. That first handshake starts a long way past “so, where are you from”.</p>
-        </div>
-        <p class="tiny">Prototype · fictional participants · about 90 seconds end to end</p>
-      </div>
-    </aside>
-  </div>
+  <div class="wrap" id="app"></div>
 </div>
 
 <div class="splash" id="splash">
-  <span class="label on">Helsinki · 12 March 2027</span>
-  <h1 class="display">Tonight you<br>meet them.</h1>
+  <span class="label" style="color:rgba(245,244,239,.5)">Helsinki · 12 March 2027</span>
+  <h1 class="display">Tonight you meet them.</h1>
 </div>
 <div class="confetti" id="confetti"></div>
 
 <script src="assets/pixel.js"></script>
 <script src="assets/halftone.js"></script>
+<script src="assets/motion.js"></script>
 <script>
 (function(){
 "use strict";
 
-HALFTONE.mount(document.getElementById('field'), { gap:15, maxR:3.1, colour:'243,242,238' });
+HALFTONE.mount(document.getElementById('field'), { gap:17, maxR:2.6, colour:'20,21,26' });
+MOTION.pointer();
 
 var cast = PIXEL.catalogue(60);
 function byHandle(h){ for(var i=0;i<cast.length;i++) if(cast[i].handle===h) return cast[i]; return cast[0]; }
 
-var ME    = { handle:'Compass',  real:'Emma',  spec:byHandle('Compass').spec };
-var THEM  = { handle:'Meridian', real:'Alex',  spec:byHandle('Meridian').spec };
-var OTHER = { handle:'Lantern',  real:'Noor',  spec:byHandle('Lantern').spec };
+var ME    = { handle:'Compass',  real:'Emma', spec:byHandle('Compass').spec };
+var THEM  = { handle:'Meridian', real:'Alex', spec:byHandle('Meridian').spec };
+var OTHER = { handle:'Lantern',  real:'Noor', spec:byHandle('Lantern').spec };
 
-var state = { tasks:0 };
+var MISSIONS=[
+  {n:'01', t:'Find three things you both like', w:'Week 3'},
+  {n:'02', t:'Two truths and a lie',            w:'Week 5'},
+  {n:'03', t:'Three clues so they can find you',w:'Week 7'}
+];
+var REWARDS=[
+  {ic:'01', t:'First word'},
+  {ic:'02', t:'Common ground'},
+  {ic:'03', t:'Called the lie'},
+  {ic:'04', t:'Clues sent'},
+  {ic:'★',  t:'Met in person'}
+];
 
-var app = document.getElementById('app');
-var stepsEl = document.getElementById('steps');
-var stepLabel = document.getElementById('stepLabel');
-var splash = document.getElementById('splash');
-var confettiEl = document.getElementById('confetti');
+var state={ tasks:0, rewards:1 };
 
-function px(spec,opts){ return PIXEL.svg(spec, opts||{}); }
+var app=document.getElementById('app');
+var stepsEl=document.getElementById('steps');
+var stepLabel=document.getElementById('stepLabel');
+var splash=document.getElementById('splash');
+var confettiEl=document.getElementById('confetti');
+
+function px(spec,opts){ return PIXEL.svg(spec,opts||{}); }
+
 function progress(){
-  for(var i=0;i<3;i++){
-    stepsEl.children[i].className='step'+(i<state.tasks?' done':(i===state.tasks?' now':''));
-  }
-  stepLabel.textContent='Task '+state.tasks+' / 3';
+  for(var i=0;i<3;i++) stepsEl.children[i].className='step'+(i<state.tasks?' done':(i===state.tasks?' now':''));
+  stepLabel.textContent='Mission '+state.tasks+' / 3';
 }
+
+/** Every screen change goes behind the curtain, then replays its entrance. */
 function show(html){
-  app.innerHTML=html;
-  window.scrollTo({top:0,behavior:'smooth'});
-  progress();
-  HALFTONE.reveals('[data-reveal]');
-  PIXEL.trackEyes(document);
+  MOTION.transition(function(){
+    app.innerHTML=html;
+    progress();
+    MOTION.observe(app);
+    MOTION.magnetic(app);
+    PIXEL.trackEyes(document);
+    var h=app.querySelector('h1.display, h2.display');
+    if(h) requestAnimationFrame(function(){ MOTION.playLines(h, 120); });
+    var r=app.querySelector('.ring-wrap');
+    if(r) MOTION.ring(r, state.tasks/3);
+    var c=app.querySelector('[data-count]');
+    if(c) MOTION.countUp(c, Number(c.getAttribute('data-count')), 1200);
+  });
 }
 function on(id,fn){ var el=document.getElementById(id); if(el) el.onclick=fn; return el; }
-function reveal(list, cls, gap, done){
-  var i=0;
-  (function step(){
-    if(i>=list.length){ if(done) done(); return; }
-    list[i].classList.add(cls); i++;
-    setTimeout(step, gap);
-  })();
+function seq(list,cls,gap,done){
+  var i=0;(function step(){ if(i>=list.length){ if(done) done(); return; } list[i].classList.add(cls); i++; setTimeout(step,gap); })();
 }
 function confetti(n){
-  var cols=['#C8F04B','#FF6B5A','#4EA8F0','#FFC93C','#F3F2EE'];
+  var cols=['#0E7C5A','#FF6B5A','#4EA8F0','#FFC93C','#14151A'];
   for(var i=0;i<(n||60);i++){
     var p=document.createElement('i');
     p.style.left=Math.random()*100+'%'; p.style.top=(-16-Math.random()*50)+'px';
@@ -192,8 +176,40 @@ function confetti(n){
     p.style.animationDuration=(1.6+Math.random()*1.5)+'s';
     p.style.animationDelay=(Math.random()*.4)+'s';
     confettiEl.appendChild(p);
-    (function(n){ setTimeout(function(){ n.remove(); },4200); })(p);
+    (function(n){setTimeout(function(){n.remove();},4200);})(p);
   }
+}
+
+/* the four gamification pillars, rendered as one panel */
+function gamePanel(){
+  return '<div class="card" data-rise="60">'+
+    '<div class="spread" style="margin-bottom:18px">'+
+      '<span class="label">Your journey</span>'+
+      '<span class="label on">'+state.tasks+' of 3 missions</span></div>'+
+    '<div class="meter" style="margin-bottom:22px">'+
+      '<div class="ring-wrap"><svg class="ring" viewBox="0 0 60 60">'+
+        '<circle class="ring-bg" cx="30" cy="30" r="26"></circle>'+
+        '<circle class="ring-fill" cx="30" cy="30" r="26"></circle></svg>'+
+        '<span class="ring-label">'+Math.round(state.tasks/3*100)+'%</span></div>'+
+      '<div><h3 class="display" style="margin:0 0 3px">'+
+        (state.tasks===3?'Ready for Helsinki':'Keep talking')+'</h3>'+
+        '<span class="tiny">Two connections &middot; <span data-count="'+(state.tasks*14+6)+'">0</span> messages sent</span></div>'+
+    '</div>'+
+    MISSIONS.map(function(m,i){
+      return '<div class="mission'+(i<state.tasks?' done':'')+'">'+
+        '<span class="box">'+(i<state.tasks?'&#10003;':m.n)+'</span>'+
+        '<span class="grow"><span class="m-title">'+m.t+'</span></span>'+
+        '<span class="label">'+m.w+'</span></div>';
+    }).join('')+
+    '<hr class="rule" style="margin:18px 0 14px" />'+
+    '<span class="label" style="display:block;margin-bottom:12px">Stamps earned</span>'+
+    '<div class="rewards">'+
+      REWARDS.map(function(r,i){
+        return '<div class="reward'+(i<state.rewards?' got':'')+'">'+
+          '<span class="ic">'+(i<state.rewards?r.ic:'&#183;')+'</span><span>'+r.t+'</span></div>';
+      }).join('')+
+    '</div>'+
+  '</div>';
 }
 
 var S={};
@@ -201,20 +217,19 @@ var S={};
 /* 1 — welcome */
 S.welcome=function(){
   show(
-  '<div class="hero seq">'+
-    '<span class="label on" style="margin-bottom:26px">RESTO 2027 &middot; Helsinki</span>'+
+  '<div class="hero">'+
+    '<span class="label on" style="margin-bottom:26px" data-rise>RESTO 2027 &middot; Helsinki</span>'+
     '<h1 class="display">Two people at RESTO are about to meet you.</h1>'+
-    '<p class="lead">You will not know who they are. They will not know who you are. Eight weeks of that, and then March.</p>'+
-    '<div><button class="btn" id="go">Create my account</button></div>'+
+    '<p class="lead" data-rise="420">You will not know who they are. They will not know who you are. Eight weeks of that, and then March.</p>'+
+    '<div data-rise="540"><button class="btn" id="go">Create my account</button></div>'+
   '</div>'+
-  '<div class="toast" id="toast">'+
+  '<div class="toast">'+
     '<div class="toast-bar"></div>'+
     '<div class="spread"><span class="label on">Signed in</span><span class="label">52 days to go</span></div>'+
     '<div class="row" style="margin-top:14px">'+
-      '<div class="px-tile bare" style="width:52px;flex:0 0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
+      '<div class="px-tile bare" style="width:54px;flex:0 0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
       '<div><h3 class="display" style="margin:0 0 2px">Compass</h3>'+
-      '<span class="tiny">Real name sealed until the welcome evening.</span></div>'+
-    '</div>'+
+      '<span class="tiny">Real name sealed until the welcome evening.</span></div></div>'+
   '</div>');
   on('go', S.matching);
 };
@@ -222,14 +237,14 @@ S.welcome=function(){
 /* 2 — matching */
 S.matching=function(){
   show(
-  '<div class="stack center" style="min-height:70svh;justify-content:center;align-items:center">'+
-    '<div class="px-tile float" style="width:120px">'+px(THEM.spec,{level:3})+'</div>'+
-    '<h2 class="display" id="mt" style="margin-top:32px">Looking for someone</h2>'+
+  '<div class="stack center section" style="min-height:62svh;justify-content:center;align-items:center">'+
+    '<div class="px-tile float" style="width:130px">'+px(THEM.spec,{level:3})+'</div>'+
+    '<h2 class="display" id="mt" style="margin-top:34px">Looking for someone</h2>'+
     '<p class="lead" id="ms" style="margin:0">312 people signed up. One of them is yours.</p>'+
   '</div>');
   var lines=[
     ['Looking for someone','312 people signed up. One of them is yours.'],
-    ['Checking you two have never met','Nobody gets matched with their own classmates.'],
+    ['Checking you two have never met','Nobody is matched with their own classmates.'],
     ['Found them','One pick each. No swapping, no take-backs.']
   ];
   var i=0;
@@ -237,142 +252,141 @@ S.matching=function(){
     i++;
     var mt=document.getElementById('mt'), ms=document.getElementById('ms');
     if(!mt){ clearInterval(iv); return; }
-    if(i>=lines.length){ clearInterval(iv); setTimeout(S.matched,800); return; }
+    if(i>=lines.length){ clearInterval(iv); setTimeout(S.matched,900); return; }
     mt.textContent=lines[i][0]; ms.textContent=lines[i][1];
-    mt.classList.remove('pop'); void mt.offsetWidth; mt.classList.add('pop');
-  },1250);
+    mt.removeAttribute('data-split');
+    MOTION.playLines(mt,0);
+    ms.classList.remove('pop'); void ms.offsetWidth; ms.classList.add('pop');
+  },1350);
 };
 
-/* 3 — two connections */
+/* 3 — two connections (social) + the journey panel */
 S.matched=function(){
   show(
-  '<div class="stack seq narrow section">'+
-    '<span class="tag on"><span class="dot"></span> Week 2</span>'+
-    '<h1 class="display">You picked Meridian!</h1>'+
-    '<p class="lead">And someone picked you. That\'s two people to talk to before March — and neither of them has any idea who you are.</p>'+
-    '<div class="conn on">'+
-      '<div class="px-tile bare" style="width:58px;flex:0 0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-      '<div class="grow"><h3 class="display" style="margin:0">Meridian</h3>'+
-        '<span class="label" style="letter-spacing:.14em">You picked them</span></div>'+
-      '<span class="label on">New</span>'+
+  '<div class="narrow section">'+
+    '<span class="tag on" data-rise><span class="dot live"></span> Week 2</span>'+
+    '<h1 class="display" style="margin-top:22px">You picked Meridian!</h1>'+
+    '<p class="lead" data-rise="380">And someone picked you. Two people to talk to before March, and neither of them has any idea who you are.</p>'+
+    '<div class="stack sm" style="margin-bottom:22px">'+
+      '<div class="conn on" data-rise="440">'+
+        '<div class="px-tile bare" style="width:60px;flex:0 0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+        '<div class="grow"><h3 class="display" style="margin:0">Meridian</h3><span class="label">You picked them</span></div>'+
+        '<span class="label on">New</span></div>'+
+      '<div class="conn" data-rise="520">'+
+        '<div class="px-tile bare" style="width:60px;flex:0 0 auto">'+px(OTHER.spec,{level:3,googly:true})+'</div>'+
+        '<div class="grow"><h3 class="display" style="margin:0">Lantern</h3><span class="label">They picked you</span></div>'+
+        '<span class="label">Say hi</span></div>'+
     '</div>'+
-    '<div class="conn">'+
-      '<div class="px-tile bare" style="width:58px;flex:0 0 auto">'+px(OTHER.spec,{level:3,googly:true})+'</div>'+
-      '<div class="grow"><h3 class="display" style="margin:0">Lantern</h3>'+
-        '<span class="label" style="letter-spacing:.14em">They picked you</span></div>'+
-      '<span class="label">Say hi</span>'+
-    '</div>'+
-    '<div class="note on"><b>House rule</b>No names, no schools, no photos, no Instagram. If it slips out, you\'ve spoiled your own reveal.</div>'+
-    '<button class="btn" id="go">Start talking</button>'+
+    '<div class="note on" data-rise="580"><b>House rule</b>No names, no schools, no photos, no Instagram. If it slips out, you have spoiled your own reveal.</div>'+
+    '<div style="margin:22px 0" data-rise="640">'+gamePanel()+'</div>'+
+    '<button class="btn" id="go" data-rise="680">Start talking</button>'+
   '</div>');
   on('go', S.task1);
 };
 
-/* 4 — task 1: mutual interests, through chat */
+/* 4 — mission 1: mutual interests, found by talking */
 S.task1=function(){
   show(
-  '<div class="stack seq narrow section">'+
-    '<div class="spread"><span class="label on">Task 1 · Week 3</span><span class="label">With Meridian</span></div>'+
-    '<h1 class="display">Find three things you both like.</h1>'+
-    '<p class="lead">Films, food, terrible taste in music — anything, as long as you both actually mean it. Just talk until you get there.</p>'+
-    '<div class="card flat" id="chat">'+
-      '<div class="bub">so. eight weeks of this and i can\'t even ask your name</div>'+
+  '<div class="narrow section">'+
+    '<div class="spread" data-rise><span class="label on">Mission 01 &middot; Week 3</span><span class="label">With Meridian</span></div>'+
+    '<h1 class="display" style="margin-top:18px">Find three things you both like.</h1>'+
+    '<p class="lead" data-rise="380">Films, food, terrible taste in music. Anything, as long as you both actually mean it. Just talk until you get there.</p>'+
+    '<div class="card flat" id="chat" data-rise="420" style="background:none;border:0;padding:0">'+
+      '<div class="bub">so. eight weeks of this and i cannot even ask your name</div>'+
       '<div class="bub me">ask me something better then</div>'+
-      '<div class="bub">fine. worst airport coffee you\'ve ever paid actual money for</div>'+
-      '<div class="bub me">Helsinki T2, gate 24. I\'d defend it in court</div>'+
-      '<div class="bub">unbelievable. that\'s one thing in common and it\'s a bad opinion</div>'+
+      '<div class="bub">fine. worst airport coffee you have ever paid actual money for</div>'+
+      '<div class="bub me">Helsinki T2, gate 24. I would defend it in court</div>'+
+      '<div class="bub">unbelievable. that is one thing in common and it is a bad opinion</div>'+
     '</div>'+
-    '<div class="card" id="found">'+
+    '<div class="card" id="found" style="margin-top:20px" data-rise="460">'+
       '<span class="label">Found together</span>'+
-      '<div class="found"><span class="k">01</span><span class="small">Coffee, defended badly</span></div>'+
+      '<div class="found" style="margin-top:8px"><span class="k">01</span><span class="small">Coffee, defended badly</span></div>'+
       '<div class="found"><span class="k">02</span><span class="small">Both interrailed last summer, three days apart</span></div>'+
       '<div class="found"><span class="k">03</span><span class="small">Flow Festival, already in both calendars</span></div>'+
     '</div>'+
-    '<div id="after"></div>'+
-    '<button class="btn" id="go">Play the conversation</button>'+
+    '<div id="after" style="margin-top:20px"></div>'+
+    '<div style="margin-top:22px"><button class="btn" id="go">Play the conversation</button></div>'+
   '</div>');
-
   var btn=document.getElementById('go');
   btn.onclick=function(){
     if(btn.dataset.done){ S.task2(); return; }
     btn.disabled=true; btn.textContent='Talking…';
-    var bubs=[].slice.call(document.querySelectorAll('.bub'));
-    reveal(bubs,'in',620,function(){
-      var found=[].slice.call(document.querySelectorAll('.found'));
-      reveal(found,'in',520,function(){
-        state.tasks=1; progress(); confetti(24);
+    seq([].slice.call(document.querySelectorAll('.bub')),'in',640,function(){
+      seq([].slice.call(document.querySelectorAll('.found')),'in',540,function(){
+        state.tasks=1; state.rewards=2; progress(); confetti(26);
         document.getElementById('after').innerHTML=
-          '<div class="note on pop"><b>Three things. Not bad for two strangers!</b>Task 1 is done for both of you.</div>';
+          '<div class="note on pop"><b>Three things. Not bad for two strangers!</b>Mission 01 complete for both of you. Stamp earned: Common ground.</div>';
         btn.disabled=false; btn.textContent='Continue'; btn.dataset.done='1';
       });
     });
   };
 };
 
-/* 5 — task 2 */
+/* 5 — mission 2 */
 S.task2=function(){
   show(
-  '<div class="stack seq narrow section">'+
-    '<div class="spread"><span class="label on">Task 2 · Week 5</span><span class="label">With Meridian</span></div>'+
-    '<h1 class="display">Two truths and a lie.</h1>'+
-    '<p class="lead">Send three things about yourself. Two true, one invented. See if they can spot it.</p>'+
-    '<div class="card stack sm">'+
+  '<div class="narrow section">'+
+    '<div class="spread" data-rise><span class="label on">Mission 02 &middot; Week 5</span><span class="label">With Meridian</span></div>'+
+    '<h1 class="display" style="margin-top:18px">Two truths and a lie.</h1>'+
+    '<p class="lead" data-rise="380">Send three things about yourself. Two true, one invented. See if they can spot it.</p>'+
+    '<div class="card stack sm" data-rise="430">'+
       '<label class="field"><span class="label">Statement 01</span><input type="text" value="I have broken the same finger three times" /></label>'+
       '<label class="field"><span class="label">Statement 02</span><input type="text" value="I once served a table of forty on my own" /></label>'+
       '<label class="field"><span class="label">Statement 03</span><input type="text" value="I can sleep through absolutely anything" /></label>'+
     '</div>'+
-    '<div id="after"></div>'+
-    '<button class="btn" id="go">Send all three</button>'+
+    '<div id="after" style="margin-top:20px"></div>'+
+    '<div style="margin-top:22px"><button class="btn" id="go">Send all three</button></div>'+
   '</div>');
   var btn=document.getElementById('go');
   btn.onclick=function(){
     if(btn.dataset.done){ S.task3(); return; }
-    state.tasks=2; progress(); confetti(24);
+    state.tasks=2; state.rewards=3; progress(); confetti(26);
     document.getElementById('after').innerHTML=
       '<div class="stack sm">'+
-        '<div class="note on pop"><b>Meridian guessed the finger!</b>Wrong. It was the table of forty.</div>'+
+        '<div class="note on pop"><b>Meridian guessed the finger!</b>Wrong. It was the table of forty. Stamp earned: Called the lie.</div>'+
         '<div class="card pop row">'+
-          '<div class="px-tile bare" style="width:56px;flex:0 0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-          '<div><span class="label">Meridian</span>'+
-            '<p class="small" style="margin:4px 0 0">“you absolutely cannot sleep through anything, nobody can, this is a lie too”</p></div>'+
-        '</div>'+
+          '<div class="px-tile bare" style="width:58px;flex:0 0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+          '<div><span class="label">Meridian</span><p class="small" style="margin:5px 0 0">'+
+          '&ldquo;you absolutely cannot sleep through anything, nobody can, this is a lie too&rdquo;</p></div></div>'+
       '</div>';
     btn.textContent='Continue'; btn.dataset.done='1';
   };
 };
 
-/* 6 — task 3 */
+/* 6 — mission 3 */
 S.task3=function(){
   show(
-  '<div class="stack seq narrow section">'+
-    '<div class="spread"><span class="label on">Task 3 · Week 7</span><span class="label">With Meridian</span></div>'+
-    '<h1 class="display">Three clues so they can find you.</h1>'+
-    '<p class="lead">On the night you get about five minutes to spot each other in a room full of people. Be specific.</p>'+
-    '<div class="card stack sm">'+
+  '<div class="narrow section">'+
+    '<div class="spread" data-rise><span class="label on">Mission 03 &middot; Week 7</span><span class="label">With Meridian</span></div>'+
+    '<h1 class="display" style="margin-top:18px">Three clues so they can find you.</h1>'+
+    '<p class="lead" data-rise="380">On the night you get about five minutes to spot each other in a room full of people. Be specific.</p>'+
+    '<div class="card stack sm" data-rise="430">'+
       '<label class="field"><span class="label">Clue 01</span><input type="text" value="Red scarf. I will not take it off all evening" /></label>'+
       '<label class="field"><span class="label">Clue 02</span><input type="text" value="About 1.60m, so probably below your eye level" /></label>'+
       '<label class="field"><span class="label">Clue 03</span><input type="text" value="Hovering near the coffee. Always near the coffee" /></label>'+
-      '<p class="tiny" style="margin:0">Not useful: “I have brown hair.” Everyone has brown hair.</p>'+
+      '<p class="tiny" style="margin:0">Not useful: &ldquo;I have brown hair.&rdquo; Everyone has brown hair.</p>'+
     '</div>'+
-    '<div id="after"></div>'+
-    '<button class="btn" id="go">Send my clues</button>'+
-    '<button class="linkbtn" id="skip" style="display:none">Skip to the welcome evening</button>'+
+    '<div id="after" style="margin-top:20px"></div>'+
+    '<div style="margin-top:22px"><button class="btn" id="go">Send my clues</button> '+
+      '<button class="linkbtn" id="skip" style="display:none">Skip to the welcome evening</button></div>'+
   '</div>');
   var btn=document.getElementById('go'), skip=document.getElementById('skip');
   btn.onclick=function(){
     if(btn.dataset.done){ S.event(); return; }
-    state.tasks=3; progress(); confetti(40);
+    state.tasks=3; state.rewards=4; progress(); confetti(40);
     document.getElementById('after').innerHTML=
       '<div class="stack sm">'+
-        '<div class="note on pop"><b>All three tasks done!</b>Nothing left now except turning up.</div>'+
+        '<div class="note on pop"><b>All three missions done!</b>Nothing left now except turning up.</div>'+
         '<div class="card pop"><span class="label">Their clues, for you</span>'+
-          '<div class="found in" style="border-top:0"><span class="k">01</span><span class="small">Green jacket, too warm for indoors</span></div>'+
+          '<div class="found in" style="border-top:0;margin-top:8px"><span class="k">01</span><span class="small">Green jacket, too warm for indoors</span></div>'+
           '<div class="found in"><span class="k">02</span><span class="small">Tall. Annoyingly tall</span></div>'+
-          '<div class="found in"><span class="k">03</span><span class="small">Will be the one talking to the staff</span></div>'+
-        '</div>'+
+          '<div class="found in"><span class="k">03</span><span class="small">Will be the one talking to the staff</span></div></div>'+
+        gamePanel()+
       '</div>';
+    var r=document.querySelector('#after .ring-wrap'); if(r) MOTION.ring(r,1);
+    var c=document.querySelector('#after [data-count]'); if(c) MOTION.countUp(c,Number(c.getAttribute('data-count')),1200);
     btn.textContent='Wait for March'; btn.className='btn ghost'; btn.dataset.done='1';
-    skip.style.display='block';
+    skip.style.display='inline-block';
   };
   skip.onclick=S.event;
 };
@@ -380,20 +394,19 @@ S.task3=function(){
 /* 7 — reveal */
 S.event=function(){
   splash.classList.add('on');
-  setTimeout(function(){ splash.classList.remove('on'); },2300);
+  setTimeout(function(){ splash.classList.remove('on'); },2400);
   show(
-  '<div class="stack seq narrow section">'+
-    '<span class="tag on"><span class="dot live"></span> Welcome evening · Helsinki</span>'+
-    '<h1 class="display">Eight weeks. One question.</h1>'+
-    '<div id="stage">'+
+  '<div class="narrow section">'+
+    '<span class="tag on" data-rise><span class="dot live"></span> Welcome evening &middot; Helsinki</span>'+
+    '<h1 class="display" style="margin-top:22px">Eight weeks. One question.</h1>'+
+    '<div id="stage" data-rise="420" style="margin:10px 0 26px">'+
       '<div class="portrait float">'+px(THEM.spec,{level:3})+'</div>'+
-      '<h2 class="display center" style="margin:22px 0 2px">Meridian</h2>'+
-      '<p class="label center">Real name still hidden</p>'+
+      '<h2 class="display" style="margin:26px 0 2px">Meridian</h2>'+
+      '<p class="label">Real name still sealed</p>'+
     '</div>'+
     '<div id="after"></div>'+
-    '<button class="btn" id="go">Reveal my connection</button>'+
+    '<div style="margin-top:22px"><button class="btn" id="go">Reveal my connection</button></div>'+
   '</div>');
-
   var btn=document.getElementById('go');
   btn.onclick=function(){
     if(btn.dataset.done){ S.meet(); return; }
@@ -405,86 +418,97 @@ S.event=function(){
       if(n>0){ stage.innerHTML='<div class="count">'+n+'</div>'; return; }
       clearInterval(iv);
       stage.innerHTML=
-        '<div class="card light center pop">'+
-          '<span class="label" style="color:rgba(11,11,14,.5)">It was</span>'+
-          '<div class="px-tile bare" style="width:150px;margin:14px auto 0">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-          '<h1 class="display" style="margin:18px 0 6px;font-size:46px">Alex!</h1>'+
-          '<p class="small" style="margin:0;color:rgba(11,11,14,.7)">Metropolia UAS · Tourism Management</p>'+
-          '<p class="tiny" style="margin:8px 0 0;color:rgba(11,11,14,.55)">Eight weeks as Meridian.</p>'+
+        '<div class="card dark pop" style="text-align:center;padding:34px 22px">'+
+          '<span class="label">It was</span>'+
+          '<div class="px-tile bare" style="width:160px;margin:16px auto 0">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+          '<h1 class="display" style="margin:22px 0 8px;font-size:clamp(40px,9vw,64px);color:var(--paper)">Alex!</h1>'+
+          '<p class="small" style="margin:0;color:rgba(245,244,239,.75)">Metropolia UAS &middot; Tourism Management</p>'+
+          '<p class="tiny" style="margin:10px 0 0">Eight weeks as Meridian.</p>'+
         '</div>';
-      confetti(90);
-      PIXEL.trackEyes(document);
+      confetti(90); PIXEL.trackEyes(document);
       setTimeout(function(){
         document.getElementById('after').innerHTML=
-          '<div class="note on pop"><b>Look for the red scarf</b>“About 1.60m. Hovering near the coffee. Always near the coffee.”</div>';
+          '<div class="note on pop"><b>Look for the red scarf</b>&ldquo;About 1.60m. Hovering near the coffee. Always near the coffee.&rdquo;</div>';
         btn.disabled=false; btn.textContent='Go and find them'; btn.dataset.done='1';
-      },900);
-    },850);
+      },950);
+    },880);
   };
 };
 
-/* 8 — met */
+/* 8 — met, reward */
 S.meet=function(){
   show(
-  '<div class="stack seq narrow section">'+
-    '<span class="label on">Helsinki · Welcome evening</span>'+
-    '<h1 class="display">Found each other!</h1>'+
-    '<p class="lead">Eight weeks of typing. Four seconds of eye contact.</p>'+
-    '<div class="card duo">'+
-      '<div class="who"><div class="px-tile bare" style="width:92px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
-        '<h3 class="display" style="margin:10px 0 0">Emma</h3><span class="tiny">Compass</span></div>'+
+  '<div class="narrow section">'+
+    '<span class="label on" data-rise>Helsinki &middot; Welcome evening</span>'+
+    '<h1 class="display" style="margin-top:18px">Found each other!</h1>'+
+    '<p class="lead" data-rise="380">Eight weeks of typing. Four seconds of eye contact.</p>'+
+    '<div class="card duo" data-rise="430">'+
+      '<div class="who"><div class="px-tile bare" style="width:96px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
+        '<h3 class="display" style="margin:12px 0 0">Emma</h3><span class="tiny">Compass</span></div>'+
       '<div class="label on">met</div>'+
-      '<div class="who"><div class="px-tile bare" style="width:92px;margin:0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-        '<h3 class="display" style="margin:10px 0 0">Alex</h3><span class="tiny">Meridian</span></div>'+
+      '<div class="who"><div class="px-tile bare" style="width:96px;margin:0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
+        '<h3 class="display" style="margin:12px 0 0">Alex</h3><span class="tiny">Meridian</span></div>'+
     '</div>'+
-    '<div class="card quiet center"><span class="label">Next</span>'+
-      '<p class="small" style="margin:10px 0 0">Take a photo. It goes in your RESTO passport.</p></div>'+
-    '<div id="after"></div>'+
-    '<button class="btn" id="go">We found each other</button>'+
+    '<div class="card quiet center" style="margin-top:16px" data-rise="480"><span class="label">Next</span>'+
+      '<p class="small" style="margin:10px 0 0">Take a photo together. It goes straight into your RESTO passport.</p></div>'+
+    '<div id="after" style="margin-top:20px"></div>'+
+    '<div style="margin-top:22px"><button class="btn" id="go">We found each other</button></div>'+
   '</div>');
   var btn=document.getElementById('go');
   btn.onclick=function(){
     if(btn.dataset.done){ S.done(); return; }
-    confetti(110);
+    state.rewards=5; confetti(120);
     document.getElementById('after').innerHTML=
-      '<div class="card on pop row">'+
-        '<div style="width:46px;height:46px;border:1px dashed var(--accent);display:grid;place-items:center;flex:0 0 auto">'+
-          '<span class="label on" style="letter-spacing:.06em">27</span></div>'+
-        '<div><span class="label">RESTO passport</span>'+
-          '<h3 class="display" style="margin:4px 0 2px">Mystery connection — stamped</h3>'+
-          '<span class="tiny">12 March 2027, Helsinki</span></div>'+
-      '</div>';
+      '<div class="card on pop"><span class="label on">RESTO passport &middot; stamped</span>'+
+        '<h3 class="display" style="margin:8px 0 12px">Mystery connection complete</h3>'+
+        '<div class="rewards">'+REWARDS.map(function(r){
+          return '<div class="reward got"><span class="ic">'+r.ic+'</span><span>'+r.t+'</span></div>';}).join('')+'</div></div>';
     btn.textContent='Continue'; btn.dataset.done='1';
   };
 };
 
-/* 9 — done */
+/* 9 — summary */
 S.done=function(){
   show(
-  '<div class="stack seq narrow section">'+
-    '<span class="tag">Journey complete</span>'+
-    '<h1 class="display">One down. One still waiting.</h1>'+
-    '<p class="lead">Lantern is somewhere in the same room, looking for a person in a red scarf. Fifty-eight strangers after that — which is what the rest of RESTO is for.</p>'+
-    '<div class="card duo">'+
-      '<div class="who"><div class="px-tile bare" style="width:70px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:8px">Emma</div></div>'+
-      '<div class="label on">·</div>'+
-      '<div class="who"><div class="px-tile bare" style="width:70px;margin:0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div><div class="tiny" style="margin-top:8px">Alex</div></div>'+
-    '</div>'+
-    '<div class="note"><b>What actually happened here</b>Two months of curiosity turned into a conversation that started somewhere past small talk. The platform did the waiting. The students did the networking.</div>'+
-    '<button class="btn ghost" id="again">Run it again</button>'+
+  '<div class="narrow section">'+
+    '<span class="tag" data-rise>Journey complete</span>'+
+    '<h1 class="display" style="margin-top:22px">One down. One still waiting.</h1>'+
+    '<p class="lead" data-rise="380">Lantern is somewhere in the same room, looking for a red scarf. Fifty-eight strangers after that, which is what the rest of RESTO is for.</p>'+
+    '<div data-rise="430">'+gamePanel()+'</div>'+
+    '<div class="note" style="margin-top:20px" data-rise="480"><b>What actually happened here</b>Two months of curiosity turned into a conversation that started a long way past small talk. The platform did the waiting. The students did the networking.</div>'+
+    '<div style="margin-top:22px"><button class="btn ghost" id="again">Run it again</button></div>'+
   '</div>');
   on('again', reset);
 };
 
-function reset(){
-  state={tasks:0}; confettiEl.innerHTML=''; splash.classList.remove('on');
-  S.welcome();
-}
+/* ---------------------------- controls ---------------------------- */
+var ACCENTS=[
+  ['Forest','#0E7C5A','#FFFFFF','#E2F0EA'],
+  ['Cobalt','#2440D8','#FFFFFF','#E4E8FD'],
+  ['Plum','#7B2E63','#FFFFFF','#F3E6EF'],
+  ['Teal','#0F6E78','#FFFFFF','#DFF0F2'],
+  ['Ink','#14151A','#FFFFFF','#ECEBE6']
+];
+var sw=document.getElementById('swatches');
+ACCENTS.forEach(function(a){
+  var b=document.createElement('button');
+  b.className='swatch'; b.style.background=a[1]; b.title=a[0]+' '+a[1];
+  b.onclick=function(){
+    var r=document.documentElement.style;
+    r.setProperty('--accent',a[1]); r.setProperty('--accent-ink',a[2]);
+    r.setProperty('--accent-soft',a[3]);
+    r.setProperty('--accent-line',a[1]+'55');
+  };
+  sw.appendChild(b);
+});
+
+function reset(){ state={tasks:0,rewards:1}; confettiEl.innerHTML=''; splash.classList.remove('on'); S.welcome(); }
 document.getElementById('resetBtn').onclick=reset;
 document.getElementById('howBtn').onclick=function(){
   alert('Mystery Networking — prototype\n\n'+
-    'In the real programme the three tasks open in weeks 3, 5 and 7, and identities are only revealed at the welcome evening in Helsinki.\n\n'+
-    'Demo mode removes every wait, so the whole eight weeks takes about ninety seconds. All participants are fictional.\n\n'+
+    'Three missions open in weeks 3, 5 and 7. Identities are revealed only at the welcome evening in Helsinki.\n\n'+
+    'Demo mode removes every wait, so eight weeks takes about ninety seconds. All participants are fictional.\n\n'+
+    'The five squares in the top bar switch the accent colour live.\n\n'+
     'Presenting: right arrow or enter advances, R restarts.');
 };
 document.addEventListener('keydown',function(e){
