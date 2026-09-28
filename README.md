@@ -9,7 +9,7 @@ This repository contains two separate things:
 
 | | What it is | Where |
 |---|---|---|
-| **Demo prototype** | A clickable, fictional walkthrough of the whole journey in 60–90 seconds, for the university final presentation. No accounts, no server needed. | `demo/index.html` |
+| **Demo prototype** | A clickable, fictional walkthrough of the whole journey in about 90 seconds, for the university final presentation. Mobile-first, with a desktop layout, and no accounts or server needed — open the file directly. | `demo/index.html` |
 | **Live website** | The real product used to run the event: accounts, exclusive avatars, first-come-first-served matching, persistent chat, weekly tasks, organiser console, public reveal page. | `server/` + `public/` |
 
 ---
@@ -51,6 +51,13 @@ that file. `data/` is git-ignored.
 
 The organiser console drives everything — participants only ever see what the
 current week allows.
+
+### Presenting the demo
+
+Open `demo/index.html` in any browser, from anywhere — it carries its own
+fonts and draws every character in code, so it works with no network.
+Right arrow or enter advances, **R** restarts, and the five squares in the
+top bar switch the accent colour live.
 
 ### Week 1 · Sign up
 You send the Microsoft Form, collect emails, then email participants the site
