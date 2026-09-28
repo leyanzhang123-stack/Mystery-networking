@@ -29,22 +29,22 @@
   // Whole outfits rather than three independent random colours — this is what
   // stops the cast looking like a paint chart.
   var OUTFITS = [
-    { wear: '#E9E4DA', legs: '#2E3550', shoe: '#EFECE4' },
-    { wear: '#3A3F4A', legs: '#2A2E36', shoe: '#1E2027' },
-    { wear: '#8FA68C', legs: '#2F3338', shoe: '#E9E6DE' },
-    { wear: '#B5603F', legs: '#2E3550', shoe: '#4A3A2E' },
-    { wear: '#39506B', legs: '#C4B79E', shoe: '#2A2E36' },
-    { wear: '#B9A7D6', legs: '#33363D', shoe: '#EDEAE2' },
-    { wear: '#6E7A55', legs: '#4A4036', shoe: '#2A2620' },
-    { wear: '#F2F0EA', legs: '#23252B', shoe: '#B5523F' },
-    { wear: '#D8C9A8', legs: '#3E4550', shoe: '#2A2E36' },
-    { wear: '#5E6E8C', legs: '#33363D', shoe: '#E9E6DE' },
-    { wear: '#C98B8B', legs: '#33363D', shoe: '#EDEAE2' },
-    { wear: '#2F5D52', legs: '#37332C', shoe: '#20242A' },
-    { wear: '#1F2430', legs: '#4A5266', shoe: '#EFECE4' },
-    { wear: '#E3B04B', legs: '#2E3550', shoe: '#2A2E36' },
-    { wear: '#7D6B8F', legs: '#2A2E36', shoe: '#E9E6DE' },
-    { wear: '#A8B8C4', legs: '#3A3F4A', shoe: '#2A2E36' }
+    { wear: '#FF6B5A', legs: '#2C3550', shoe: '#F5F2EA' },   // coral
+    { wear: '#FFC93C', legs: '#2A2E3A', shoe: '#2A2E36' },   // sunflower
+    { wear: '#3FBF7F', legs: '#2C3550', shoe: '#F5F2EA' },   // grass
+    { wear: '#4EA8F0', legs: '#26303F', shoe: '#F0463C' },   // sky
+    { wear: '#7B61FF', legs: '#2A2E3A', shoe: '#F5F2EA' },   // violet
+    { wear: '#FF7BAC', legs: '#3A63C9', shoe: '#F5F2EA' },   // pink + denim
+    { wear: '#2FC4C4', legs: '#2C3550', shoe: '#FFC93C' },   // teal
+    { wear: '#FF8A3D', legs: '#2A2E3A', shoe: '#F5F2EA' },   // tangerine
+    { wear: '#A8D84A', legs: '#334155', shoe: '#2A2E36' },   // lime
+    { wear: '#3355EE', legs: '#26303F', shoe: '#F5F2EA' },   // cobalt
+    { wear: '#D94BC9', legs: '#2A2E3A', shoe: '#F5F2EA' },   // magenta
+    { wear: '#5FE3B0', legs: '#3A63C9', shoe: '#2A2E36' },   // mint + denim
+    { wear: '#F0463C', legs: '#2C3550', shoe: '#FFC93C' },   // red
+    { wear: '#8AA0FF', legs: '#2A2E3A', shoe: '#FF6B5A' },   // periwinkle
+    { wear: '#FFE05C', legs: '#3A63C9', shoe: '#F5F2EA' },   // lemon + denim
+    { wear: '#F5F2EA', legs: '#3355EE', shoe: '#FF6B5A' }    // white + electric blue
   ];
 
   var NEUTRAL_TRIM = ['#2A2A33', '#3E3A34', '#E8E4DC', '#C4BDB1', '#6E6A60'];
