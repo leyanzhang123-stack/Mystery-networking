@@ -54,8 +54,16 @@ current week allows.
 
 ### Presenting the demo
 
-Open `demo/index.html` in any browser, from anywhere — it carries its own
-fonts and draws every character in code, so it works with no network.
+`demo/index.html` is a **single self-contained file**. Stylesheet, fonts and
+scripts are all inlined and every character is drawn in code, so it opens
+anywhere — from a USB stick, an email attachment, a file viewer, with no
+network and nothing next to it.
+
+Edit `demo/src.html` (which references `public/assets/`), then rebuild:
+
+```bash
+npm run build:demo
+```
 Right arrow or enter advances, **R** restarts, and the five squares in the
 top bar switch the accent colour live.
 
@@ -115,7 +123,9 @@ else's browser — hiding it in the interface would not be enough.
 ## Project layout
 
 ```
-demo/index.html      Self-contained presentation prototype (open directly in a browser)
+demo/index.html      Self-contained presentation prototype — built, open directly
+demo/src.html        Source for the prototype; references public/assets
+tools/build-demo.js  Inlines the assets into demo/index.html
 server/index.js      HTTP server, routing, sessions, JSON API, static files
 server/db.js         SQLite schema and all data rules (matching, chat, tasks)
 server/avatars.js    The 72 claimable mystery characters
