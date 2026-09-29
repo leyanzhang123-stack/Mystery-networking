@@ -1677,6 +1677,12 @@ document.addEventListener('keydown', function(e){
   if(e.key==='ArrowRight'||e.key==='Enter'){ var b=app.querySelector('.btn:not([disabled])'); if(b) b.click(); }
 });
 
+// the three characters in the desktop poster panel
+['pc1','pc2','pc3'].forEach(function(id,i){
+  var el = document.getElementById(id);
+  if(el) el.innerHTML = px(cast[[7,23,41][i]].spec,{level:3,googly:true});
+});
+
 PIXEL.trackEyes(document);
 reset();
 })();
