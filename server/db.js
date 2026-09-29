@@ -131,6 +131,18 @@ const takenAvatarIds = () =>
 
 const allUsers = () => db.prepare('SELECT * FROM users ORDER BY id').all();
 
+function setAdmin(userId, isAdmin) {
+  db.prepare('UPDATE users SET is_admin = ? WHERE id = ?').run(isAdmin ? 1 : 0, userId);
+  return getUserById(userId);
+}
+const countAdmins = () => db.prepare('SELECT COUNT(*) AS n FROM users WHERE is_admin = 1').get().n;
+
+/** A consistent copy of the database, safe to take while the site is running. */
+function snapshot(path) {
+  db.exec(`VACUUM INTO '${path.replace(/'/g, "''")}'`);
+  return path;
+}
+
 /* ----------------------------- connections ---------------------------- */
 const connectionsOf = (userId) =>
   db.prepare('SELECT * FROM connections WHERE chooser_id = ? OR chosen_id = ? ORDER BY id').all(userId, userId);
@@ -259,6 +271,7 @@ module.exports = {
   getSettings, setSetting,
   hashPassword, verifyPassword,
   createUser, getUserById, getUserByEmail, completeProfile, takenAvatarIds, allUsers,
+  setAdmin, countAdmins, snapshot,
   connectionsOf, getConnection, pickableFor, pick, autoMatch, hasPicked, wasPicked,
   addMessage, messagesOf,
   saveSubmission, submissionsOf,

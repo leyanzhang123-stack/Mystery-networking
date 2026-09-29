@@ -65,6 +65,18 @@
           '</div>'+
 
           '<div class="card" data-rise="340">'+
+            '<span class="label">Handover &amp; backup</span>'+
+            '<h3 class="display" style="margin:10px 0 6px">Not tied to one person</h3>'+
+            '<p class="small muted" style="margin:0 0 14px">Anyone can be made an organiser in the participants table below. '+
+              'To hand the event over without signing in at all, set the <code>ADMIN_EMAILS</code> environment variable '+
+              'to a comma-separated list of addresses — those people become organisers the moment they sign in, '+
+              'and cannot be demoted from here.</p>'+
+            '<button class="btn wide" id="backup">Download a backup</button>'+
+            '<p class="tiny" style="margin:10px 0 0">One file, safe to take while the site is running. '+
+              'Take one before the welcome evening.</p>'+
+          '</div>'+
+
+          '<div class="card" data-rise="380">'+
             '<span class="label">Mission 2 · week 5</span>'+
             '<h3 class="display" style="margin:10px 0 6px">Editable at any time</h3>'+
             '<label class="field" style="margin-top:12px"><span class="label">Title</span>'+
@@ -89,14 +101,16 @@
         '<div class="card" style="margin-top:16px" data-rise="420">'+
           '<span class="label">Participants</span>'+
           '<div class="scroller"><table class="data" style="margin-top:10px"><thead><tr>'+
-            '<th></th><th>Mystery name</th><th>Real name</th><th>Email</th><th>Photo</th><th>Links</th></tr></thead><tbody>'+
+            '<th></th><th>Mystery name</th><th>Real name</th><th>Email</th><th>Photo</th><th>Links</th><th>Organiser</th></tr></thead><tbody>'+
             d.participants.map(p =>
               '<tr><td style="width:40px">'+(p.avatar ? '<div style="width:32px">'+PIXEL.svg(p.avatar.spec,{level:3})+'</div>' : '')+'</td>'+
-              '<td>'+APP.escape(p.alias || '—')+(p.isAdmin?' <span class="label on">admin</span>':'')+'</td>'+
+              '<td>'+APP.escape(p.alias || '—')+'</td>'+
               '<td>'+APP.escape(p.realName || '—')+'</td>'+
               '<td class="tiny">'+APP.escape(p.email)+'</td>'+
               '<td>'+(p.hasPhoto ? 'yes' : '<span class="tiny">no</span>')+'</td>'+
-              '<td>'+p.connections+'</td></tr>').join('')+
+              '<td>'+p.connections+'</td>'+
+              '<td><button class="btn sm '+(p.isAdmin?'':'ghost')+'" data-role="'+p.id+'" data-make="'+(p.isAdmin?'0':'1')+'">'+
+                (p.isAdmin ? 'Organiser' : 'Make organiser')+'</button></td></tr>').join('')+
           '</tbody></table></div>'+
         '</div>'+
 
@@ -122,6 +136,18 @@
           try { const r = await APP.api('/api/admin/automatch', {}); APP.toast(r.made+' new connections made', 'ok'); load(); }
           catch (e) { APP.toast(e.message); }
         };
+        document.getElementById('backup').onclick = () => { location.href = '/api/admin/backup'; };
+        document.querySelectorAll('[data-role]').forEach((b) => {
+          b.onclick = async () => {
+            const make = b.dataset.make === '1';
+            if (!make && !confirm('Remove organiser access from this person?')) return;
+            try {
+              await APP.api('/api/admin/role', { userId: Number(b.dataset.role), isAdmin: make });
+              APP.toast(make ? 'They are an organiser now' : 'Organiser access removed', 'ok');
+              load();
+            } catch (e) { APP.toast(e.message); }
+          };
+        });
         document.getElementById('savew5').onclick = async () => {
           try {
             await APP.api('/api/admin/setting', { key:'week5_title', value: document.getElementById('w5t').value });

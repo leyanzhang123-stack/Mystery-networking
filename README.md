@@ -31,8 +31,12 @@ npm run seed                  # optional: fill it with fictional participants
 | `/reveal.html` | The reveal wall, for the big screen on the night |
 | `/demo` | The presentation prototype |
 
-**The first account to register becomes the organiser.** Register yours
-before you send the link to anyone else.
+**The first account to register becomes the organiser**, so register yours
+before you send the link to anyone else. The role is not stuck there: any
+organiser can promote or demote anyone from the participants table, and
+`ADMIN_EMAILS` makes the listed addresses organisers the moment they sign in,
+which is how you hand the event to next year's team without signing in
+yourself. The last remaining organiser cannot be demoted.
 
 ### Configuration
 
@@ -42,6 +46,7 @@ before you send the link to anyone else.
 | `DATA_DIR` | `./data` | Where the SQLite file lives. Point it at a persistent disk when deploying. |
 | `SESSION_SECRET` | generated into `DATA_DIR/session.key` | Set it explicitly in production. |
 | `SECURE_COOKIES` | off | Set to `1` when serving over HTTPS so the session cookie is marked `Secure`. |
+| `ADMIN_EMAILS` | empty | Comma-separated addresses that are always organisers, whoever registered first. How the event is handed to someone else. |
 
 Five wrong passwords for the same address blocks that address for a minute,
 doubling up to ten, so the sign-in page cannot be hammered.

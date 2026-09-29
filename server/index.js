@@ -21,6 +21,17 @@ const SECRET = (function () {
 })();
 const SESSION_DAYS = 120;
 
+/* Emails listed here are always organisers, whoever registered first. This is
+   how the role is handed over if the person running the event changes. */
+const ADMIN_EMAILS = String(process.env.ADMIN_EMAILS || '')
+  .split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+function applyAdminList(user) {
+  if (!user || !ADMIN_EMAILS.length) return user;
+  const listed = ADMIN_EMAILS.includes(String(user.email).toLowerCase());
+  if (listed && !user.is_admin) return store.setAdmin(user.id, 1);
+  return user;
+}
+
 function signSession(userId) {
   const exp = Date.now() + SESSION_DAYS * 864e5;
   const data = userId + '.' + exp;
@@ -163,7 +174,7 @@ api['POST /api/register'] = async (req, res) => {
   if (!isEmail(email)) return fail(res, 400, 'Please enter a valid email address.');
   if (password.length < 6) return fail(res, 400, 'Password must be at least 6 characters.');
   if (store.getUserByEmail(email)) return fail(res, 409, 'That email is already registered — sign in instead.');
-  const user = store.createUser(email, password);
+  const user = applyAdminList(store.createUser(email, password));
   send(res, 200, { ok: true, user: selfView(user) }, { 'Set-Cookie': sessionCookie(signSession(user.id), SESSION_DAYS * 86400) });
 };
 
@@ -178,7 +189,8 @@ api['POST /api/login'] = async (req, res) => {
     return fail(res, 401, 'Wrong email or password.');
   }
   clearFailures(email.toLowerCase());
-  send(res, 200, { ok: true, user: selfView(user) }, { 'Set-Cookie': sessionCookie(signSession(user.id), SESSION_DAYS * 86400) });
+  applyAdminList(user);
+  send(res, 200, { ok: true, user: selfView(store.getUserById(user.id)) }, { 'Set-Cookie': sessionCookie(signSession(user.id), SESSION_DAYS * 86400) });
 };
 
 api['POST /api/logout'] = async (req, res) => {
@@ -383,6 +395,42 @@ api['POST /api/admin/setting'] = async (req, res, user) => {
   if (!allowed.includes(body.key)) return fail(res, 400, 'Unknown setting.');
   store.setSetting(body.key, clean(body.value, 400));
   send(res, 200, { ok: true, settings: store.getSettings() });
+};
+
+api['POST /api/admin/role'] = async (req, res, user) => {
+  if (!requireAdmin(res, user)) return;
+  const body = await readBody(req);
+  const target = store.getUserById(Number(body.userId));
+  if (!target) return fail(res, 404, 'No such participant.');
+  const makeAdmin = !!body.isAdmin;
+  if (!makeAdmin && store.countAdmins() <= 1 && target.is_admin) {
+    return fail(res, 409, 'Someone has to be the organiser. Add another one first.');
+  }
+  if (!makeAdmin && ADMIN_EMAILS.includes(String(target.email).toLowerCase())) {
+    return fail(res, 409, 'That address is set as an organiser in ADMIN_EMAILS — remove it there first.');
+  }
+  store.setAdmin(target.id, makeAdmin);
+  send(res, 200, { ok: true });
+};
+
+api['GET /api/admin/backup'] = async (req, res, user) => {
+  if (!requireAdmin(res, user)) return;
+  const file = path.join(store.DATA_DIR, 'backup-' + Date.now() + '.db');
+  try {
+    store.snapshot(file);
+    const stamp = new Date().toISOString().slice(0, 10);
+    res.writeHead(200, {
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': `attachment; filename="mystery-networking-${stamp}.db"`,
+      'Content-Length': fs.statSync(file).size
+    });
+    const stream = fs.createReadStream(file);
+    stream.pipe(res);
+    stream.on('close', () => fs.unlink(file, () => {}));
+  } catch (err) {
+    fs.unlink(file, () => {});
+    fail(res, 500, 'Could not make a backup: ' + err.message);
+  }
 };
 
 api['POST /api/admin/automatch'] = async (req, res, user) => {
