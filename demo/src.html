@@ -16,6 +16,8 @@
   .demo-bar button:hover{color:#fff;border-color:#fff}
   .swatches{display:flex;gap:5px}
   .swatch{width:13px;height:13px;border:1px solid rgba(255,255,255,.35);cursor:pointer;padding:0;border-radius:2px}
+  .demo-bar button.music{min-width:86px;transition:background .3s var(--ease), color .3s var(--ease)}
+  .demo-bar button.music.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .topbar{top:33px}
 
   .screen{min-height:calc(100svh - 132px);display:flex;flex-direction:column;padding:26px 0 34px}
@@ -86,11 +88,13 @@
 </head>
 <body>
 <canvas id="field"></canvas>
+<audio id="theme" src="../public/assets/theme.mp3" loop preload="auto"></audio>
 
 <div class="page">
   <div class="demo-bar">
     <div class="inner">
-      <span>Demo</span><span class="grow"></span>
+      <button id="musicBtn" class="music">&#9834; Music</button>
+      <span class="grow"></span>
       <span class="swatches" id="swatches"></span>
       <button id="howBtn">?</button><button id="resetBtn">Restart</button>
     </div>
@@ -633,6 +637,38 @@ ACCENTS.forEach(function(a){
   sw.appendChild(b);
 });
 
+/* Background music for presenting. Browsers only allow audio after a real
+   click, so it is a button rather than something that starts on its own. */
+var theme = document.getElementById('theme');
+var musicBtn = document.getElementById('musicBtn');
+var fadeTimer = null;
+function fadeTo(target, done){
+  clearInterval(fadeTimer);
+  fadeTimer = setInterval(function(){
+    var v = theme.volume;
+    if (Math.abs(v - target) < 0.03) {
+      theme.volume = target; clearInterval(fadeTimer); if (done) done(); return;
+    }
+    theme.volume = v + (target - v) * 0.18;
+  }, 40);
+}
+musicBtn.onclick = function(){
+  if (theme.paused) {
+    theme.volume = 0;
+    theme.play().then(function(){
+      musicBtn.classList.add('on');
+      musicBtn.innerHTML = '&#9834; Playing';
+      fadeTo(0.32);
+    }).catch(function(){
+      musicBtn.innerHTML = '&#9834; Blocked';
+    });
+  } else {
+    fadeTo(0, function(){ theme.pause(); });
+    musicBtn.classList.remove('on');
+    musicBtn.innerHTML = '&#9834; Music';
+  }
+};
+
 function reset(){
   state={tasks:0,chosen:null,alias:'Compass',clues:[false,false,false]};
   ME.spec = h('Compass').spec;
@@ -646,7 +682,7 @@ document.getElementById('howBtn').onclick = function(){
     'Everyone gets two connections: the person they pick, and the person who picks them. '+
     'Three missions open in weeks 3, 5 and 7, and identities are revealed only at the welcome evening in Helsinki.\n\n'+
     'Demo mode removes every wait. All participants are made up.\n\n'+
-    'The five squares switch the accent colour live.');
+    'The five squares switch the accent colour live, and the note button starts the background music.');
 };
 document.addEventListener('keydown', function(e){
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;

@@ -62,8 +62,10 @@ scripts are inlined and every character is drawn in code, so it opens from a
 USB stick, an email attachment or a file preview with no network and nothing
 beside it.
 
-Right arrow or enter advances, **R** restarts, and the five squares in the top
-bar switch the accent colour live.
+Right arrow or enter advances, **R** restarts, the five squares switch the
+accent colour live, and **♪ Music** starts the background track — press it
+once before you begin speaking. The track is inlined too, so it plays with no
+network. Replace `public/assets/theme.mp3` and rebuild to change it.
 
 Edit `demo/src.html` (which references `public/assets/`), then rebuild:
 
