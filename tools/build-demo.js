@@ -28,6 +28,12 @@ html = html.replace(/<link rel="stylesheet" href="([^"]+)" \/>/, (_, href) => {
 html = html.replace(/<script src="([^"]+)"><\/script>/g, (_, src) =>
   '<script>\n' + read(src) + '\n</script>');
 
+// audio, as a data URI — the presentation copy must not need a server
+html = html.replace(/src="([^"]+\.mp3)"/g, (_, src) => {
+  const data = fs.readFileSync(path.join(ROOT, 'demo', src)).toString('base64');
+  return 'src="data:audio/mpeg;base64,' + data + '"';
+});
+
 html = html.replace('<head>', '<head>\n<!-- Built by tools/build-demo.js — edit demo/src.html, not this file. -->');
 
 fs.writeFileSync(OUT, html);
