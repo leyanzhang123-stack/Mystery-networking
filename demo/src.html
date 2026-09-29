@@ -117,7 +117,6 @@
         <div class="px-tile"><span id="pc2"></span></div>
         <div class="px-tile"><span id="pc3"></span></div>
       </div>
-      <p class="tiny">Prototype &middot; fictional participants &middot; about 90 seconds end to end</p>
     </aside>
     <div class="wrap" id="app"></div>
   </div>
@@ -139,53 +138,59 @@
 GRAIN.speckle(document.getElementById('field'), { density: 1/620, colour:'#101014', seed: 20270312 });
 MOTION.pointer();
 
-var cast=PIXEL.catalogue(60);
+var cast = PIXEL.catalogue(60);
 function h(n){ for(var i=0;i<cast.length;i++) if(cast[i].handle===n) return cast[i]; return cast[0]; }
-var ME={handle:'Compass',spec:h('Compass').spec},
-    THEM={handle:'Meridian',spec:h('Meridian').spec},
-    OTHER={handle:'Lantern',spec:h('Lantern').spec};
 
-var MISSIONS=[
-  {n:'01',t:'Find three things you both like',w:'Week 3'},
-  {n:'02',t:'Two truths and a lie',w:'Week 5'},
-  {n:'03',t:'Three clues so they can find you',w:'Week 7'}
+var ME = { handle:'Compass', real:'Emma',  spec:h('Compass').spec };
+var A  = { handle:'Meridian',real:'Alex',  uni:'Metropolia UAS',  spec:h('Meridian').spec,
+           clues:['Green jacket, too warm for indoors','Annoyingly tall','Talking to the staff'] };
+var B  = { handle:'Lantern', real:'Noor',  uni:'Laurea UAS',      spec:h('Lantern').spec,
+           clues:['Yellow tote bag','Shortest person in the room','Will be near the door'] };
+
+var MY_CLUES = [
+  'Red scarf, on all evening',
+  'About 1.60m',
+  'Hovering near the coffee'
 ];
-var REWARDS=[{ic:'01',t:'First word'},{ic:'02',t:'Common ground'},{ic:'03',t:'Called the lie'},
-             {ic:'04',t:'Clues sent'},{ic:'★',t:'Met in person'}];
 
-var state={tasks:0,rewards:1};
-var app=document.getElementById('app'), stepsEl=document.getElementById('steps'),
-    stepLabel=document.getElementById('stepLabel'), splash=document.getElementById('splash'),
-    confettiEl=document.getElementById('confetti');
+// characters already claimed by other people, so the wall looks real
+function taken(i){ return (i * 7 + 3) % 11 < 4; }
 
-function px(s,o){ return PIXEL.svg(s,o||{}); }
+var state = { tasks:0, chosen:null, alias:'Compass', clues:[false,false,false] };
+
+var app = document.getElementById('app');
+var stepsEl = document.getElementById('steps');
+var stepLabel = document.getElementById('stepLabel');
+var splash = document.getElementById('splash');
+var confettiEl = document.getElementById('confetti');
+
+function px(spec,opts){ return PIXEL.svg(spec, opts||{}); }
 function progress(){
   for(var i=0;i<3;i++) stepsEl.children[i].className='step'+(i<state.tasks?' done':(i===state.tasks?' now':''));
-  stepLabel.textContent=state.tasks+' / 3';
+  stepLabel.textContent = state.tasks + ' / 3';
 }
-var pending=null;
-/** Queue the wiring for a screen; it runs once the new markup is on the page. */
-function later(fn){ pending=fn; }
-function show(html){
+function show(html, wire){
   MOTION.transition(function(){
-    app.innerHTML=html; progress();
+    app.innerHTML = html;
+    progress();
     MOTION.observe(app); MOTION.magnetic(app); PIXEL.trackEyes(document);
-    var t=app.querySelector('h1.display'); if(t) requestAnimationFrame(function(){ MOTION.playLines(t,140); });
-    var r=app.querySelector('.ring-wrap'); if(r) MOTION.ring(r,state.tasks/3);
-    var c=app.querySelector('[data-count]'); if(c) MOTION.countUp(c,Number(c.getAttribute('data-count')),1200);
-    if(pending){ var f=pending; pending=null; f(); }
-  });
+    var t = app.querySelector('h1.display');
+    if(t) requestAnimationFrame(function(){ MOTION.playLines(t,140); });
+    var r = app.querySelector('.ring-wrap'); if(r) MOTION.ring(r, state.tasks/3);
+    var c = app.querySelector('[data-count]'); if(c) MOTION.countUp(c, Number(c.getAttribute('data-count')), 1200);
+    if(wire) wire();
+  }, app);
 }
 function on(id,fn){ var e=document.getElementById(id); if(e) e.onclick=fn; return e; }
 function seq(list,cls,gap,done){
-  var i=0;(function s(){ if(i>=list.length){ if(done) done(); return;} list[i].classList.add(cls); i++; setTimeout(s,gap); })();
+  var i=0;(function step(){ if(i>=list.length){ if(done) done(); return; } list[i].classList.add(cls); i++; setTimeout(step,gap); })();
 }
 function confetti(n){
-  var c=['#8B5CF6','#2FBF87','#F7A8CF','#0E0E12','#FFC93C'];
+  var cols=['#8B5CF6','#2FBF87','#F7A8CF','#0E0E12','#FFC93C'];
   for(var i=0;i<(n||60);i++){
     var p=document.createElement('i');
     p.style.left=Math.random()*100+'%'; p.style.top=(-16-Math.random()*50)+'px';
-    p.style.background=c[i%c.length];
+    p.style.background=cols[i%cols.length];
     p.style.animationDuration=(1.6+Math.random()*1.5)+'s';
     p.style.animationDelay=(Math.random()*.4)+'s';
     confettiEl.appendChild(p);
@@ -193,104 +198,228 @@ function confetti(n){
   }
 }
 
-var S={};
+var S = {};
 
-S.welcome=function(){
+/* 1 — welcome */
+S.welcome = function(){
   show(
   '<div class="screen">'+
     '<span class="label" data-rise>RESTO 2027 &middot; Helsinki</span>'+
     '<h1 class="display" style="margin-top:18px">Two people at RESTO are about to <span class="serif">meet you</span>.</h1>'+
     '<div class="stagecard" data-rise="420"><div class="inner">'+px(ME.spec,{level:3,googly:true})+'</div></div>'+
     '<div class="spacer"></div>'+
-    '<p class="lead" data-rise="520" style="margin-bottom:18px">You will not know who they are. They will not know who you are.</p>'+
+    '<p class="lead" data-rise="520" style="margin-bottom:6px">You will not know who they are. They will not know who you are.</p>'+
+    '<p class="lead" data-rise="560" style="color:var(--accent);font-weight:600;margin-bottom:18px">HUOM! Keep it that way until Helsinki.</p>'+
     '<div data-rise="600"><button class="btn wide" id="go">Create my account</button></div>'+
-  '</div>');
-  later(function(){ on('go',S.matching); });
+  '</div>', function(){ on('go', S.character); });
 };
 
-S.matching=function(){
+/* 2 — claim a character */
+S.character = function(){
+  var free = cast.filter(function(c,i){ return !taken(i); });
   show(
-  '<div class="screen" style="justify-content:center;text-align:center;align-items:center">'+
-    '<div class="stagecard"><div class="inner" style="width:150px">'+px(THEM.spec,{level:3})+'</div></div>'+
-    '<h1 class="display" id="mt" style="margin-top:26px">Looking for someone</h1>'+
-    '<p class="lead" id="ms" style="margin:0">312 people signed up.</p>'+
-  '</div>');
-  var lines=[['Looking for someone','312 people signed up.'],
-             ['Never met before','Nobody gets their own classmates.'],
-             ['Found them','One pick each. No swapping.']];
-  var i=0, iv=setInterval(function(){
-    i++; var mt=document.getElementById('mt'), ms=document.getElementById('ms');
-    if(!mt){ clearInterval(iv); return; }
-    if(i>=lines.length){ clearInterval(iv); setTimeout(S.matched,950); return; }
-    mt.textContent=lines[i][0]; ms.textContent=lines[i][1];
-    mt.removeAttribute('data-split'); MOTION.playLines(mt,0);
-  },1400);
+  '<div class="screen">'+
+    '<div class="spread" data-rise><span class="label on">Week 1 &middot; set up</span>'+
+      '<span class="label" id="count">'+free.length+' / 60 free</span></div>'+
+    '<h1 class="display" style="margin-top:16px">Pick who you will be until <span class="serif">Helsinki</span>.</h1>'+
+    '<p class="lead" data-rise="380">This is all anyone sees for the next eight weeks. One character per person, and once it is taken it is gone.</p>'+
+    '<div class="tile-grid" id="grid" data-rise="420"></div>'+
+    '<div class="spacer"></div>'+
+    '<button class="btn wide" id="go" disabled>Continue</button>'+
+  '</div>', function(){
+    var grid = document.getElementById('grid'), btn = document.getElementById('go');
+    grid.innerHTML = cast.map(function(c,i){
+      return '<div class="tile'+(taken(i)?' gone':'')+'" data-h="'+c.handle+'">'+
+        px(c.spec,{level:3, googly:!taken(i)})+'<span class="nm">'+c.handle+'</span></div>';
+    }).join('');
+    grid.onclick = function(e){
+      var tile = e.target.closest('.tile');
+      if(!tile || tile.classList.contains('gone')) return;
+      state.alias = tile.dataset.h;
+      ME.spec = h(state.alias).spec;
+      grid.querySelectorAll('.tile').forEach(function(t){ t.classList.toggle('sel', t.dataset.h===state.alias); });
+      btn.disabled = false;
+    };
+    btn.onclick = S.profile;
+  });
 };
 
-S.matched=function(){
+/* 3 — the sealed half */
+S.profile = function(){
+  show(
+  '<div class="screen">'+
+    '<span class="label on" data-rise>Week 1 &middot; set up</span>'+
+    '<h1 class="display" style="margin-top:16px">Now the part <span class="serif">nobody sees</span>.</h1>'+
+    '<p class="lead" data-rise="380">Your real name and photo are sealed until the welcome evening. They exist so people can actually find each other on the night.</p>'+
+    '<div class="card row" data-rise="420">'+
+      '<div class="px-tile" style="width:76px;flex:0 0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
+      '<div><span class="label">Your character</span>'+
+        '<h3 class="display" style="margin:4px 0 0">'+state.alias+'</h3></div>'+
+    '</div>'+
+    '<div class="stack sm" style="margin-top:16px" data-rise="460">'+
+      '<label class="field"><span class="label">Mystery name &middot; everyone sees this</span>'+
+        '<input type="text" value="'+state.alias+'" /></label>'+
+      '<label class="field"><span class="label">Real name &middot; sealed</span>'+
+        '<input type="text" value="Emma Virtanen" /></label>'+
+      '<div><span class="label" style="display:block;margin-bottom:8px">Photo &middot; sealed</span>'+
+        '<div class="row"><button class="btn ghost" id="photo">Add a photo</button>'+
+        '<span class="tiny" id="photostate">No photo yet</span></div></div>'+
+    '</div>'+
+    '<div class="spacer"></div>'+
+    '<button class="btn wide" id="go">Save and continue</button>'+
+  '</div>', function(){
+    on('photo', function(){
+      document.getElementById('photostate').innerHTML = '<span style="color:var(--mint);font-weight:600">Added &mdash; sealed until March</span>';
+    });
+    on('go', S.wall);
+  });
+};
+
+/* 4 — the picking wall */
+S.wall = function(){
+  var free = cast.filter(function(c,i){ return !taken(i) && c.handle!==state.alias; });
+  show(
+  '<div class="screen">'+
+    '<div class="spread" data-rise><span class="label on">Week 2 &middot; first come, first served</span>'+
+      '<span class="label">'+(60-free.length)+' taken</span></div>'+
+    '<h1 class="display" style="margin-top:16px">Pick <span class="serif">one person</span>.</h1>'+
+    '<p class="lead" data-rise="380">'+free.length+' people are still free. You get one pick, and you can be picked once — so most people end up with two connections.</p>'+
+    '<div class="tile-grid" id="grid" data-rise="420"></div>'+
+    '<div class="spacer"></div>'+
+    '<div class="note" data-rise="460"><b>No take-backs</b>Whoever gets there first gets them. If someone disappears from the wall, you were too slow.</div>'+
+  '</div>', function(){
+    var grid = document.getElementById('grid');
+    grid.innerHTML = free.map(function(c){
+      var mine = c.handle===A.handle;
+      return '<div class="tile'+(mine?' sel':'')+'" data-h="'+c.handle+'">'+
+        px(c.spec,{level:3,googly:true})+'<span class="nm">'+c.handle+'</span></div>';
+    }).join('');
+    grid.onclick = function(e){
+      var tile = e.target.closest('.tile'); if(!tile) return;
+      S.picked(tile.dataset.h);
+    };
+  });
+};
+
+/* 5 — picked, and picked back */
+S.picked = function(handle){
+  var who = h(handle);
+  A.handle = who.handle; A.spec = who.spec;
   show(
   '<div class="screen">'+
     '<span class="label on" data-rise>Week 2</span>'+
-    '<h1 class="display" style="margin-top:18px">You picked <span class="serif">Meridian</span>!</h1>'+
-    '<p class="lead" data-rise="420">And someone picked you. Two people to talk to before March.</p>'+
-    '<div class="stack sm" data-rise="480">'+
-      '<div class="conn on"><div class="px-tile bare" style="width:54px;flex:0 0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-        '<div class="grow"><h3 class="display" style="margin:0">Meridian</h3><span class="label">You picked them</span></div></div>'+
-      '<div class="conn"><div class="px-tile bare" style="width:54px;flex:0 0 auto">'+px(OTHER.spec,{level:3,googly:true})+'</div>'+
-        '<div class="grow"><h3 class="display" style="margin:0">Lantern</h3><span class="label">They picked you</span></div></div>'+
-    '</div>'+
+    '<h1 class="display" style="margin-top:16px">You picked <span class="serif">'+A.handle+'</span>!</h1>'+
+    '<div class="stagecard" data-rise="400"><div class="inner">'+px(A.spec,{level:3,googly:true})+'</div></div>'+
+    '<div id="after"></div>'+
     '<div class="spacer"></div>'+
-    '<div class="note on" data-rise="560" style="margin-bottom:18px"><b>House rule</b>No names, no schools, no photos. If it slips out, you have spoiled your own reveal.</div>'+
-    '<div data-rise="620"><button class="btn wide" id="go">Start talking</button></div>'+
-  '</div>');
-  later(function(){ on('go',S.task1); });
+    '<button class="btn wide" id="go">See my connections</button>'+
+  '</div>', function(){
+    setTimeout(function(){
+      var el = document.getElementById('after');
+      if(!el) return;
+      el.innerHTML = '<div class="note on pop"><b>And '+B.handle+' picked you!</b>Two people to talk to now, and neither of them has any idea who you are.</div>';
+      confetti(30);
+    }, 1400);
+    on('go', S.connections);
+  });
 };
 
-S.task1=function(){
+/* 6 — both connections + the rule */
+S.connections = function(){
   show(
   '<div class="screen">'+
-    '<span class="label on" data-rise>Mission 01 &middot; Week 3</span>'+
-    '<h1 class="display" style="margin-top:18px">Find three things you <span class="serif">both like</span>.</h1>'+
-    '<p class="lead" data-rise="420">Anything, as long as you both mean it. Just talk until you get there.</p>'+
-    '<div id="chat" data-rise="460">'+
+    '<span class="label on" data-rise>Week 2</span>'+
+    '<h1 class="display" style="margin-top:16px">Two strangers, <span class="serif">both yours</span>.</h1>'+
+    '<div class="stack sm" data-rise="400">'+
+      '<div class="conn on"><div class="px-tile bare" style="width:54px;flex:0 0 auto">'+px(A.spec,{level:3,googly:true})+'</div>'+
+        '<div class="grow"><h3 class="display" style="margin:0">'+A.handle+'</h3><span class="label">You picked them</span></div></div>'+
+      '<div class="conn"><div class="px-tile bare" style="width:54px;flex:0 0 auto">'+px(B.spec,{level:3,googly:true})+'</div>'+
+        '<div class="grow"><h3 class="display" style="margin:0">'+B.handle+'</h3><span class="label">They picked you</span></div></div>'+
+    '</div>'+
+    '<div class="spacer"></div>'+
+    '<div class="note on" data-rise="460" style="margin-bottom:18px">'+
+      '<b>&#9888;&#65039; HOUSE RULE</b>NO NAMES. NO SCHOOLS. NO PHOTOS. If it slips out, you have spoiled your own reveal.</div>'+
+    '<button class="btn wide" id="go">Start talking</button>'+
+  '</div>', function(){ on('go', function(){ S.choose(1); }); });
+};
+
+/* 7 — which of the two are you doing this with */
+S.choose = function(mission){
+  var other = mission === 2 ? A : B;      // the demo alternates, to show both threads
+  var pick  = mission === 2 ? B : A;
+  show(
+  '<div class="screen">'+
+    '<span class="label on" data-rise>Mission 0'+mission+' &middot; week '+(mission===1?3:5)+'</span>'+
+    '<h1 class="display" style="margin-top:16px">Who are you doing this one <span class="serif">with</span>?</h1>'+
+    '<p class="lead" data-rise="380">Every mission is done separately with each connection. Two conversations, two sets of answers.</p>'+
+    '<div class="stack sm" data-rise="420">'+
+      '<div class="conn on" id="p1"><div class="px-tile bare" style="width:54px;flex:0 0 auto">'+px(pick.spec,{level:3,googly:true})+'</div>'+
+        '<div class="grow"><h3 class="display" style="margin:0">'+pick.handle+'</h3>'+
+        '<span class="label">'+(pick===A?'You picked them':'They picked you')+'</span></div>'+
+        '<span class="label on">To do</span></div>'+
+      '<div class="conn" id="p2"><div class="px-tile bare" style="width:54px;flex:0 0 auto">'+px(other.spec,{level:3,googly:true})+'</div>'+
+        '<div class="grow"><h3 class="display" style="margin:0">'+other.handle+'</h3>'+
+        '<span class="label">'+(other===A?'You picked them':'They picked you')+'</span></div>'+
+        '<span class="label">Later</span></div>'+
+    '</div>'+
+    '<div class="spacer"></div>'+
+    '<button class="btn wide" id="go">Open '+pick.handle+'</button>'+
+  '</div>', function(){
+    var next = mission===1 ? S.mission1 : S.mission2;
+    on('go', next); document.getElementById('p1').onclick = next;
+  });
+};
+
+/* 8 — mission one, through the chat */
+S.mission1 = function(){
+  show(
+  '<div class="screen">'+
+    '<div class="spread" data-rise><span class="label on">Mission 01 &middot; week 3</span>'+
+      '<span class="label">With '+A.handle+'</span></div>'+
+    '<h1 class="display" style="margin-top:16px">Find three things you <span class="serif">both like</span>.</h1>'+
+    '<p class="lead" data-rise="380">Anything at all, as long as you both mean it. Just talk until you get there.</p>'+
+    '<div id="chat" data-rise="420">'+
       '<div class="bub">eight weeks of this and i cannot even ask your name</div>'+
       '<div class="bub me">ask me something better then</div>'+
-      '<div class="bub">worst airport coffee you have ever paid money for</div>'+
-      '<div class="bub me">Helsinki T2, gate 24. I would defend it in court</div>'+
+      '<div class="bub">fine. dog or no dog</div>'+
+      '<div class="bub me">golden retriever. eleven years old. do not get me started</div>'+
+      '<div class="bub">oh no. mine is nine. we are going to be unbearable about this</div>'+
     '</div>'+
-    '<div class="card" id="found" style="margin-top:6px" data-rise="500">'+
+    '<div class="card" id="found" style="margin-top:6px" data-rise="460">'+
       '<span class="label">Found together</span>'+
-      '<div class="found" style="margin-top:6px"><span class="k">01</span><span class="small">Coffee, defended badly</span></div>'+
+      '<div class="found" style="margin-top:6px"><span class="k">01</span><span class="small">Both have a golden retriever</span></div>'+
       '<div class="found"><span class="k">02</span><span class="small">Both interrailed last summer</span></div>'+
-      '<div class="found"><span class="k">03</span><span class="small">Flow Festival, both calendars</span></div>'+
+      '<div class="found"><span class="k">03</span><span class="small">Neither can cook anything but pasta</span></div>'+
     '</div>'+
     '<div id="after" style="margin-top:16px"></div>'+
     '<div class="spacer"></div>'+
     '<button class="btn wide" id="go">Play the conversation</button>'+
-  '</div>');
-  later(function(){
-  var b=document.getElementById('go');
-    b.onclick=function(){
-      if(b.dataset.done){ S.task2(); return; }
-      b.disabled=true; b.textContent='Talking…';
-      seq([].slice.call(document.querySelectorAll('.bub')),'in',640,function(){
-        seq([].slice.call(document.querySelectorAll('.found')),'in',540,function(){
-          state.tasks=1; state.rewards=2; progress(); confetti(26);
-          document.getElementById('after').innerHTML='<div class="note on pop"><b>Three things!</b>Not bad for two strangers.</div>';
-          b.disabled=false; b.textContent='Continue'; b.dataset.done='1';
+  '</div>', function(){
+    var b = document.getElementById('go');
+    b.onclick = function(){
+      if(b.dataset.done){ S.choose(2); return; }
+      b.disabled = true; b.textContent='Talking…';
+      seq([].slice.call(document.querySelectorAll('.bub')),'in',620,function(){
+        seq([].slice.call(document.querySelectorAll('.found')),'in',520,function(){
+          state.tasks = 1; progress(); confetti(26);
+          document.getElementById('after').innerHTML =
+            '<div class="note on pop"><b>Three things!</b>Not bad for two strangers.</div>';
+          b.disabled=false; b.textContent='Next mission'; b.dataset.done='1';
         });
       });
     };
   });
 };
 
-S.task2=function(){
+/* 9 — mission two, with the other one */
+S.mission2 = function(){
   show(
   '<div class="screen">'+
-    '<span class="label on" data-rise>Mission 02 &middot; Week 5</span>'+
-    '<h1 class="display" style="margin-top:18px">Two truths and <span class="serif">a lie</span>.</h1>'+
-    '<p class="lead" data-rise="420">Two true, one invented. See if they can spot it.</p>'+
-    '<div class="stack sm" data-rise="460">'+
+    '<div class="spread" data-rise><span class="label on">Mission 02 &middot; week 5</span>'+
+      '<span class="label">With '+B.handle+'</span></div>'+
+    '<h1 class="display" style="margin-top:16px">Two truths and <span class="serif">a lie</span>.</h1>'+
+    '<p class="lead" data-rise="380">Two true, one invented. See if they can spot it.</p>'+
+    '<div class="stack sm" data-rise="420">'+
       '<input type="text" value="I have broken the same finger three times" />'+
       '<input type="text" value="I once served a table of forty on my own" />'+
       '<input type="text" value="I can sleep through absolutely anything" />'+
@@ -298,118 +427,178 @@ S.task2=function(){
     '<div id="after" style="margin-top:16px"></div>'+
     '<div class="spacer"></div>'+
     '<button class="btn wide" id="go">Send all three</button>'+
-  '</div>');
-  later(function(){
-  var b=document.getElementById('go');
-    b.onclick=function(){
-      if(b.dataset.done){ S.task3(); return; }
-      state.tasks=2; state.rewards=3; progress(); confetti(26);
-      document.getElementById('after').innerHTML=
-        '<div class="note on pop"><b>They guessed the finger!</b>Wrong. It was the table of forty.</div>';
-      b.textContent='Continue'; b.dataset.done='1';
+  '</div>', function(){
+    var b = document.getElementById('go');
+    b.onclick = function(){
+      if(b.dataset.done){ S.mission3(); return; }
+      state.tasks = 2; progress(); confetti(26);
+      document.getElementById('after').innerHTML =
+        '<div class="note on pop"><b>'+B.handle+' guessed the finger!</b>Wrong. It was the table of forty.</div>';
+      b.textContent='Next mission'; b.dataset.done='1';
     };
   });
 };
 
-S.task3=function(){
+/* 10 — three clues, as three things to tick off */
+S.mission3 = function(){
   show(
   '<div class="screen">'+
-    '<span class="label on" data-rise>Mission 03 &middot; Week 7</span>'+
-    '<h1 class="display" style="margin-top:18px">Three clues so they can <span class="serif">find you</span>.</h1>'+
-    '<p class="lead" data-rise="420">Five minutes, one room, three hundred people. Be specific.</p>'+
-    '<div class="stack sm" data-rise="460">'+
-      '<input type="text" value="Red scarf, on all evening" />'+
-      '<input type="text" value="About 1.60m" />'+
-      '<input type="text" value="Hovering near the coffee" />'+
+    '<div class="spread" data-rise><span class="label on">Mission 03 &middot; week 7</span>'+
+      '<span class="label">Both connections</span></div>'+
+    '<h1 class="display" style="margin-top:16px">Three clues so they can <span class="serif">find you</span>.</h1>'+
+    '<p class="lead" data-rise="380">Five minutes, one room, three hundred people. Tap each one and be specific.</p>'+
+    '<div class="clues" data-rise="420" id="clues">'+
+      [0,1,2].map(function(i){
+        return '<div class="clue" data-i="'+i+'"><div class="ringbox">0'+(i+1)+'</div>'+
+               '<div class="cap">Clue '+(i+1)+'</div></div>';
+      }).join('')+
     '</div>'+
-    '<div id="after" style="margin-top:16px"></div>'+
+    '<div id="after" style="margin-top:20px"></div>'+
     '<div class="spacer"></div>'+
-    '<button class="btn wide" id="go">Send my clues</button>'+
-  '</div>');
-  later(function(){
-  var b=document.getElementById('go');
-    b.onclick=function(){
+    '<button class="btn wide" id="go" disabled>Send my clues</button>'+
+  '</div>', function(){
+    var cl = document.getElementById('clues'), b = document.getElementById('go');
+    state.clues = [false,false,false];
+    cl.onclick = function(e){
+      var box = e.target.closest('.clue'); if(!box) return;
+      var i = Number(box.dataset.i);
+      if(state.clues[i]) return;
+      state.clues[i] = true;
+      box.classList.add('done');
+      box.querySelector('.ringbox').innerHTML = '&#10003;';
+      box.querySelector('.cap').textContent = MY_CLUES[i];
+      if(state.clues.every(Boolean)) b.disabled = false;
+    };
+    b.onclick = function(){
       if(b.dataset.done){ S.event(); return; }
-      state.tasks=3; state.rewards=4; progress(); confetti(40);
-      document.getElementById('after').innerHTML=
+      state.tasks = 3; progress(); confetti(40);
+      document.getElementById('after').innerHTML =
         '<div class="note on pop"><b>All three missions done!</b>Nothing left except turning up.</div>';
       b.textContent='Wait for March'; b.className='btn wide ghost'; b.dataset.done='1';
     };
   });
 };
 
-S.event=function(){
-  splash.classList.add('on'); setTimeout(function(){ splash.classList.remove('on'); },2400);
+/* 11 — the welcome evening */
+S.event = function(){
+  splash.classList.add('on');
+  setTimeout(function(){ splash.classList.remove('on'); }, 2400);
   show(
   '<div class="screen">'+
     '<span class="label on" data-rise>Welcome evening &middot; Helsinki</span>'+
-    '<h1 class="display" style="margin-top:18px">Eight weeks. <span class="serif">One question</span>.</h1>'+
-    '<div id="stage" data-rise="420"><div class="stagecard"><div class="inner">'+px(THEM.spec,{level:3})+'</div></div>'+
-      '<p class="label center">Real name still sealed</p></div>'+
+    '<h1 class="display" style="margin-top:16px">Eight weeks. <span class="serif">Two questions</span>.</h1>'+
+    '<div id="stage" data-rise="420">'+
+      '<div class="row" style="justify-content:center;gap:18px;padding:18px 0">'+
+        '<div class="px-tile" style="width:110px">'+px(A.spec,{level:3})+'</div>'+
+        '<div class="px-tile" style="width:110px">'+px(B.spec,{level:3})+'</div>'+
+      '</div>'+
+      '<p class="label center">Both names still sealed</p>'+
+    '</div>'+
     '<div id="after" style="margin-top:14px"></div>'+
     '<div class="spacer"></div>'+
-    '<button class="btn wide" id="go">Reveal my connection</button>'+
-  '</div>');
-  later(function(){
-  var b=document.getElementById('go');
-    b.onclick=function(){
-      if(b.dataset.done){ S.meet(); return; }
-      b.disabled=true;
-      var st=document.getElementById('stage'), n=3;
-      st.innerHTML='<div class="count">3</div>';
-      var iv=setInterval(function(){
+    '<button class="btn wide" id="go">Reveal my connections</button>'+
+  '</div>', function(){
+    var b = document.getElementById('go');
+    b.onclick = function(){
+      if(b.dataset.done){ S.find(); return; }
+      b.disabled = true;
+      var st = document.getElementById('stage'), n = 3;
+      st.innerHTML = '<div class="count">3</div>';
+      var iv = setInterval(function(){
         n--;
         if(n>0){ st.innerHTML='<div class="count">'+n+'</div>'; return; }
         clearInterval(iv);
-        st.innerHTML='<div class="card pop center" style="padding:26px 18px">'+
-          '<span class="label">It was</span>'+
-          '<div class="px-tile bare" style="width:150px;margin:14px auto 0">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-          '<h1 class="display" style="margin:18px 0 6px">Alex!</h1>'+
-          '<p class="small muted" style="margin:0">Metropolia UAS &middot; Tourism Management</p></div>';
-        confetti(90); PIXEL.trackEyes(document);
+        st.innerHTML =
+          '<div class="stack sm">'+
+            card(A, 'It was') + card(B, 'And') +
+          '</div>';
+        confetti(100); PIXEL.trackEyes(document);
         setTimeout(function(){
-          document.getElementById('after').innerHTML='<div class="note on pop"><b>Look for the red scarf</b>&ldquo;Hovering near the coffee. Always near the coffee.&rdquo;</div>';
           b.disabled=false; b.textContent='Go and find them'; b.dataset.done='1';
-        },950);
-      },880);
+        }, 800);
+      }, 880);
     };
   });
+  function card(p, lead){
+    return '<div class="card pop center" style="padding:20px 16px">'+
+      '<span class="label">'+lead+'</span>'+
+      '<div class="px-tile bare" style="width:110px;margin:10px auto 0">'+px(p.spec,{level:3,googly:true})+'</div>'+
+      '<h2 class="display" style="margin:12px 0 4px">'+p.real+'!</h2>'+
+      '<p class="small muted" style="margin:0">'+p.uni+'</p>'+
+      '<p class="tiny" style="margin:6px 0 0">Eight weeks as '+p.handle+'.</p></div>';
+  }
 };
 
-S.meet=function(){
+/* 12 — the clues, around the people they belong to */
+S.find = function(){
+  show(
+  '<div class="screen">'+
+    '<span class="label on" data-rise>Helsinki &middot; welcome evening</span>'+
+    '<h1 class="display" style="margin-top:16px">Two people to <span class="serif">find</span>.</h1>'+
+    '<p class="lead" data-rise="380">This is everything they told you about spotting them.</p>'+
+    person(A, 'a') + person(B, 'b') +
+    '<div class="spacer"></div>'+
+    '<button class="btn wide" id="go">Found them both</button>'+
+  '</div>', function(){
+    var chips = [].slice.call(document.querySelectorAll('.around .chip'));
+    seq(chips, 'in', 320);
+    on('go', S.met);
+  });
+  function person(p, key){
+    return '<div class="card around" data-rise="'+(key==='a'?420:520)+'" style="margin-bottom:14px">'+
+      '<div class="spread" style="margin-bottom:4px"><span class="label">'+p.real+'</span>'+
+      '<span class="label on">'+p.handle+'</span></div>'+
+      '<div class="who">'+px(p.spec,{level:3,googly:true})+'</div>'+
+      p.clues.map(function(c,i){ return '<span class="chip '+'abc'[i]+'">'+c+'</span>'; }).join('')+
+    '</div>';
+  }
+};
+
+/* 13 — met */
+S.met = function(){
   show(
   '<div class="screen">'+
     '<span class="label on" data-rise>Helsinki</span>'+
-    '<h1 class="display" style="margin-top:18px">Found <span class="serif">each other</span>!</h1>'+
-    '<p class="lead" data-rise="420">Eight weeks of typing. Four seconds of eye contact.</p>'+
-    '<div class="card duo" data-rise="460">'+
-      '<div class="who"><div class="px-tile bare" style="width:84px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
-        '<h3 class="display" style="margin:10px 0 0">Emma</h3></div>'+
+    '<h1 class="display" style="margin-top:16px">Found <span class="serif">each other</span>!</h1>'+
+    '<p class="lead" data-rise="380">Eight weeks of typing. Four seconds of eye contact. Twice.</p>'+
+    '<div class="card duo" data-rise="420">'+
+      '<div class="who"><div class="px-tile bare" style="width:74px;margin:0 auto">'+px(ME.spec,{level:3,googly:true})+'</div>'+
+        '<h3 class="display" style="margin:8px 0 0">Emma</h3></div>'+
       '<div class="label on">met</div>'+
-      '<div class="who"><div class="px-tile bare" style="width:84px;margin:0 auto">'+px(THEM.spec,{level:3,googly:true})+'</div>'+
-        '<h3 class="display" style="margin:10px 0 0">Alex</h3></div>'+
+      '<div class="who"><div class="row" style="justify-content:center;gap:8px">'+
+        '<div class="px-tile bare" style="width:56px">'+px(A.spec,{level:3,googly:true})+'</div>'+
+        '<div class="px-tile bare" style="width:56px">'+px(B.spec,{level:3,googly:true})+'</div></div>'+
+        '<h3 class="display" style="margin:8px 0 0">Alex &amp; Noor</h3></div>'+
     '</div>'+
     '<div id="after" style="margin-top:16px"></div>'+
     '<div class="spacer"></div>'+
     '<button class="btn wide" id="go">We found each other</button>'+
-  '</div>');
-  later(function(){
-  var b=document.getElementById('go');
-    b.onclick=function(){
+  '</div>', function(){
+    var b = document.getElementById('go');
+    b.onclick = function(){
       if(b.dataset.done){ S.done(); return; }
-      state.rewards=5; confetti(110);
-      document.getElementById('after').innerHTML=
-        '<div class="note on pop"><b>Passport stamped</b>Mystery connection complete.</div>';
+      confetti(110);
+      document.getElementById('after').innerHTML =
+        '<div class="note on pop"><b>Passport stamped</b>Mystery connection complete, twice over.</div>';
       b.textContent='See my journey'; b.dataset.done='1';
     };
   });
 };
 
-S.done=function(){
+/* 14 — journey */
+S.done = function(){
+  var MISSIONS=[
+    'Find three things you both like',
+    'Two truths and a lie',
+    'Three clues so they can find you'
+  ];
+  var REWARDS=[{ic:'01',t:'First word'},{ic:'02',t:'Common ground'},{ic:'03',t:'Called the lie'},
+               {ic:'04',t:'Clues sent'},{ic:'★',t:'Met in person'}];
   show(
   '<div class="screen">'+
     '<span class="label" data-rise>Journey</span>'+
-    '<h1 class="display" style="margin-top:18px">One down. <span class="serif">One still waiting</span>.</h1>'+
+    '<h1 class="display" style="margin-top:16px">Two names you did not have <span class="serif">yesterday</span>.</h1>'+
+    '<p class="lead" data-rise="380">Fifty-seven strangers left in the room. The hard part is over — you have already done it twice.</p>'+
     '<div class="card" data-rise="420">'+
       '<div class="meter" style="margin-bottom:20px">'+
         '<div class="ring-wrap"><svg class="ring" viewBox="0 0 60 60">'+
@@ -419,7 +608,7 @@ S.done=function(){
         '<div><h3 class="display" style="margin:0 0 2px">All missions done</h3>'+
         '<span class="tiny">2 connections &middot; <span data-count="48">0</span> messages</span></div></div>'+
       MISSIONS.map(function(m){ return '<div class="mission done"><span class="box">&#10003;</span>'+
-        '<span class="grow"><span class="m-title">'+m.t+'</span></span></div>'; }).join('')+
+        '<span class="grow"><span class="m-title">'+m+'</span></span></div>'; }).join('')+
       '<hr class="rule" style="margin:16px 0 12px" />'+
       '<span class="label" style="display:block;margin-bottom:10px">Stamps</span>'+
       '<div class="rewards">'+REWARDS.map(function(r){
@@ -427,13 +616,13 @@ S.done=function(){
     '</div>'+
     '<div class="spacer"></div>'+
     '<button class="btn wide ghost" id="again">Run it again</button>'+
-  '</div>');
-  later(function(){ on('again',reset); });
+  '</div>', function(){ on('again', reset); });
 };
 
+/* ---------------------------- controls ---------------------------- */
 var ACCENTS=[['Purple','#8B5CF6','#EFE9FE'],['Mint','#2FBF87','#DEF6EC'],['Blush','#EC6FA8','#FDE8F1'],
              ['Cobalt','#3355EE','#E6EAFD'],['Ink','#0E0E12','#ECECEF']];
-var sw=document.getElementById('swatches');
+var sw = document.getElementById('swatches');
 ACCENTS.forEach(function(a){
   var b=document.createElement('button');
   b.className='swatch'; b.style.background=a[1]; b.title=a[0]+' '+a[1];
@@ -444,20 +633,25 @@ ACCENTS.forEach(function(a){
   sw.appendChild(b);
 });
 
-function reset(){ state={tasks:0,rewards:1}; confettiEl.innerHTML=''; splash.classList.remove('on'); S.welcome(); }
-document.getElementById('resetBtn').onclick=reset;
-document.getElementById('howBtn').onclick=function(){
-  alert('Mystery Networking — prototype\n\nThree missions open in weeks 3, 5 and 7. Identities are revealed only at the welcome evening in Helsinki.\n\nDemo mode removes every wait. All participants are fictional.\n\nThe five squares switch the accent colour live.');
+function reset(){
+  state={tasks:0,chosen:null,alias:'Compass',clues:[false,false,false]};
+  ME.spec = h('Compass').spec;
+  A.handle='Meridian'; A.spec=h('Meridian').spec;
+  confettiEl.innerHTML=''; splash.classList.remove('on');
+  S.welcome();
+}
+document.getElementById('resetBtn').onclick = reset;
+document.getElementById('howBtn').onclick = function(){
+  alert('Mystery Networking — prototype\n\n'+
+    'Everyone gets two connections: the person they pick, and the person who picks them. '+
+    'Three missions open in weeks 3, 5 and 7, and identities are revealed only at the welcome evening in Helsinki.\n\n'+
+    'Demo mode removes every wait. All participants are made up.\n\n'+
+    'The five squares switch the accent colour live.');
 };
-document.addEventListener('keydown',function(e){
+document.addEventListener('keydown', function(e){
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
   if(e.key==='r'||e.key==='R'){ reset(); return; }
   if(e.key==='ArrowRight'||e.key==='Enter'){ var b=app.querySelector('.btn:not([disabled])'); if(b) b.click(); }
-});
-
-['pc1','pc2','pc3'].forEach(function(id,i){
-  var el=document.getElementById(id);
-  if(el) el.innerHTML=px(cast[[7,23,41][i]].spec,{level:3,googly:true});
 });
 
 PIXEL.trackEyes(document);

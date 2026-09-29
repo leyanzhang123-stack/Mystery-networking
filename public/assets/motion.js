@@ -86,23 +86,25 @@
     }, 2600);
   }
 
-  /* --------------------------- curtain ------------------------------ */
-  var curtain;
-  function transition(render) {
-    if (reduced) { render(); return; }
-    if (!curtain) {
-      curtain = document.createElement('div');
-      curtain.className = 'curtain';
-      document.body.appendChild(curtain);
-    }
-    curtain.classList.remove('out');
-    curtain.classList.add('in');
+  /* -------------------------- screen change -------------------------- */
+  /** The old screen drops away and the new one rises in — no blackout. */
+  function transition(render, el) {
+    var view = el || document.getElementById('view') || document.getElementById('app');
+    if (reduced || !view) { render(); if (view) window.scrollTo(0, 0); return; }
+    view.style.transition = 'opacity .26s ease, transform .26s ' + EASE;
+    view.style.opacity = '0';
+    view.style.transform = 'translateY(14px)';
     setTimeout(function () {
       render();
       window.scrollTo(0, 0);
-      curtain.classList.remove('in');
-      curtain.classList.add('out');
-    }, 460);
+      view.style.transition = 'none';
+      view.style.transform = 'translateY(-12px)';
+      requestAnimationFrame(function () {
+        view.style.transition = 'opacity .5s ease, transform .6s ' + EASE;
+        view.style.opacity = '1';
+        view.style.transform = 'none';
+      });
+    }, 280);
   }
 
   /* ------------------------ pointer behaviour ----------------------- */
