@@ -69,7 +69,10 @@ under `[env]`, and `fly deploy`.
 
 - Register your organiser account first.
 - Open `/admin.html` and check the week is 1 and picking is off.
-- Back up `DATA_DIR/mystery.db` before the welcome evening. It is one file;
-  copying it is the whole backup.
+- Take a backup before the welcome evening — **Download a backup** in the
+  console gives you the whole database as one file, safely, while the site is
+  running.
+- Handing the event to someone else: make them an organiser in the
+  participants table, or set `ADMIN_EMAILS` to their address.
 - The reveal stays sealed until you press *Publish reveal*, so nobody's real
   name or photo can leak early even if they read the page source.
