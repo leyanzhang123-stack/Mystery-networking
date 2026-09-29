@@ -1,0 +1,11 @@
+# Netlify hosts the *demo* only — it is a single static file.
+# The live site needs an always-on Node process and a disk for the database,
+# which Netlify does not provide. See DEPLOY.md.
+[build]
+  publish = "demo"
+  command = "npm run build:demo"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

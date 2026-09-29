@@ -173,7 +173,13 @@ data/                  SQLite database and session key (git-ignored)
 
 ---
 
-## Deployment notes
+## Deployment
+
+See **[DEPLOY.md](DEPLOY.md)**. In short: the demo is a static file and can go
+on Netlify; the live site needs an always-on Node process and a disk, so it
+goes on Railway, Render (paid) or Fly.io. Netlify cannot host the live site.
+
+### Notes
 
 Any host that runs Node 22 works (Render, Railway, Fly.io, a VPS). Two things
 matter:
