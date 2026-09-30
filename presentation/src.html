@@ -89,16 +89,6 @@ i.ic svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;s
   .slide.active *{animation-duration:.01ms!important;animation-delay:0ms!important}
 }
 
-/* ---------------- flags: content marked for revision (toggle with F) ---------------- */
-.flag{position:relative}
-body.flags .flag{outline:2.5px dashed var(--pink);outline-offset:12px;border-radius:6px}
-body.flags .flag::before{content:"TO REVISE";position:absolute;top:-30px;right:-12px;z-index:5;
-  font:700 11px/1 var(--body);letter-spacing:.14em;color:#fff;background:var(--pink);padding:6px 9px;border-radius:4px}
-body.flags .slide.flag-slide::after{content:"";position:absolute;inset:16px;border:3px dashed var(--pink);border-radius:18px;pointer-events:none}
-body.flags .slide.flag-slide .flag-banner{display:flex}
-.flag-banner{display:none;position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:6;align-items:center;gap:8px;
-  font:700 12px/1 var(--body);letter-spacing:.14em;color:#fff;background:var(--pink);padding:8px 14px;border-radius:0 0 8px 8px}
-
 /* ==================================================================
    01 — Cover (keeps the original watercolour background)
    ================================================================== */
@@ -192,16 +182,22 @@ body.flags .slide.flag-slide .flag-banner{display:flex}
 /* ==================================================================
    06 — 8 weeks before
    ================================================================== */
-#s6 .steps{position:absolute;left:96px;right:96px;top:250px;display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
-#s6 .step{position:relative;border-radius:24px;padding:30px 32px;background:var(--t);height:300px}
-#s6 .step .head{display:flex;align-items:center;gap:16px}
-#s6 .step .head .bubble{background:#fff;width:56px;height:56px}
-#s6 .step h3{font:900 34px/1 var(--display);letter-spacing:.02em;color:var(--c)}
-#s6 .step ul{list-style:none;margin-top:28px;display:flex;flex-direction:column;gap:14px}
-#s6 .step li{display:flex;gap:12px;align-items:center;font:600 21px/1.3 var(--body);color:var(--navy)}
-#s6 .step li i.ic{width:22px;height:22px;color:var(--c)}
-#s6 .step:not(:last-child)::after{content:"";position:absolute;right:-24px;top:50%;width:20px;height:20px;border-top:3px solid var(--pale);border-right:3px solid var(--pale);transform:translateY(-50%) rotate(45deg)}
-#s6 .arrive{position:absolute;left:96px;right:96px;bottom:112px;height:120px;border-radius:24px;border:1.5px solid var(--line);display:flex;align-items:center;padding:0 40px;gap:34px}
+#s6 .weeks{position:absolute;left:96px;right:96px;top:236px;display:grid;grid-template-columns:repeat(8,1fr);gap:16px}
+#s6 .rail{position:absolute;left:176px;right:176px;top:288px;height:3px;background:var(--line)}
+#s6 .rail b{position:absolute;inset:0;border-radius:3px;background:linear-gradient(90deg,var(--amber),var(--purple),var(--pink),var(--blue),var(--green))}
+#s6 .wk{display:flex;flex-direction:column;align-items:center;text-align:center}
+#s6 .ring{position:relative;width:104px;height:104px;border-radius:50%;background:#fff;border:4px solid var(--c);display:grid;place-items:center;
+  box-shadow:0 0 0 8px #fff,0 18px 34px -18px var(--c)}
+#s6 .ring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--t)}
+#s6 .ring b{position:relative;font:900 34px/1 var(--display);letter-spacing:-.02em;color:var(--c)}
+#s6 .focus{margin-top:22px;min-height:38px;font:800 15px/1.25 var(--display);letter-spacing:.08em;color:var(--navy)}
+#s6 .items{margin-top:14px;display:flex;flex-direction:column;gap:8px;width:100%}
+#s6 .items span{font:500 15.5px/1.32 var(--body);color:var(--navy-2)}
+#s6 .items span.key{font-weight:700;padding:9px 10px;border-radius:12px;background:var(--kt);color:var(--kc)}
+#s6 .items .mt{--kt:var(--pink-t);--kc:var(--pink)}
+#s6 .items .oc{--kt:var(--blue-t);--kc:var(--blue)}
+#s6 .items .cd{--kt:var(--amber-t);--kc:var(--amber)}
+#s6 .arrive{position:absolute;left:96px;right:96px;bottom:112px;height:88px;border-radius:24px;border:1.5px solid var(--line);display:flex;align-items:center;padding:0 40px;gap:34px}
 #s6 .arrive .n{font:900 76px/1 var(--display);color:var(--pink);letter-spacing:-.03em}
 #s6 .arrive .t{font:800 22px/1.25 var(--display);letter-spacing:.06em;color:var(--navy)}
 #s6 .people{margin-left:auto;display:flex;gap:10px}
@@ -305,7 +301,7 @@ body.flags .slide.flag-slide .flag-banner{display:flex}
 /* ==================================================================
    12 — Reset + Recharge
    ================================================================== */
-#s12 .breath{position:absolute;left:150px;top:300px;width:330px;height:330px;display:grid;place-items:center}
+#s12 .breath{position:absolute;left:120px;top:320px;width:330px;height:330px;display:grid;place-items:center}
 #s12 .breath span{position:absolute;inset:0;border-radius:50%;background:var(--purple-t)}
 #s12 .breath span:nth-child(2){inset:40px;background:#E2D6FB}
 #s12 .breath span:nth-child(3){inset:84px;background:var(--purple);opacity:.9}
@@ -314,14 +310,16 @@ body.flags .slide.flag-slide .flag-banner{display:flex}
 #s12.active .breath span:nth-child(3){animation-delay:.6s}
 @keyframes breathe{0%,100%{transform:scale(.88)}50%{transform:scale(1.05)}}
 #s12 .breath b{position:relative;font:700 15px/1.2 var(--body);letter-spacing:.2em;color:#fff;text-align:center}
-#s12 .how{position:absolute;left:600px;right:96px;top:250px}
+#s12 .how{position:absolute;left:560px;right:96px;top:230px}
 #s12 .how .eyebrow{color:var(--purple)}
-#s12 .row3{margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-#s12 .st{border-radius:22px;border:1.5px solid var(--line);padding:26px 26px 28px;min-height:280px}
+#s12 .row3{margin-top:30px;display:grid;grid-template-columns:1fr 44px 1.15fr 44px 1fr;align-items:stretch}
+#s12 .st{border-radius:22px;border:1.5px solid var(--line);padding:26px 24px 28px;min-height:390px}
+#s12 .to{display:grid;place-items:center;color:var(--muted)}
+#s12 .to i.ic{width:28px;height:28px}
 #s12 .st .k{font:800 16px/1 var(--display);color:var(--c)}
 #s12 .st h3{margin-top:16px;font:800 26px/1.05 var(--display);letter-spacing:.02em;color:var(--navy)}
-#s12 .st p{margin-top:12px;font:500 19px/1.4 var(--body);color:var(--muted)}
-#s12 .opts{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+#s12 .st p{margin-top:14px;font:500 21px/1.4 var(--body);color:var(--muted)}
+#s12 .opts{margin-top:16px;display:flex;flex-direction:column;gap:9px}
 #s12 .opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:var(--green-t);font:600 17px/1 var(--body);color:var(--navy)}
 #s12 .opt i.ic{width:20px;height:20px;color:var(--green)}
 #s12 .tagline{color:var(--purple)}
@@ -483,7 +481,6 @@ body.idle #ui{opacity:0}
 .ctl{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--navy);background:rgba(255,255,255,.9);border:1.5px solid var(--line);transition:background .2s}
 .ctl:hover{background:var(--blue-t)}
 .ctl i.ic{width:18px;height:18px}
-#flagBtn.on{background:var(--pink);border-color:var(--pink);color:#fff}
 #hint{position:fixed;top:14px;right:18px;z-index:20;font:600 12px/1 var(--body);color:var(--muted);background:rgba(255,255,255,.9);
   border:1.5px solid var(--line);padding:9px 12px;border-radius:30px;transition:opacity .6s}
 #hint kbd{font:700 11px/1 var(--body);border:1px solid var(--pale);border-radius:4px;padding:2px 5px;margin:0 2px;color:var(--navy)}
@@ -503,7 +500,7 @@ body.idle #hint,#hint.gone{opacity:0;pointer-events:none}
 #overlay iframe{width:100%;height:100%;border:0;display:block}
 </style>
 </head>
-<body class="flags">
+<body>
 <div id="viewport"><div id="stage">
 
 <!-- ============================ 01 COVER ============================ -->
@@ -635,7 +632,7 @@ body.idle #hint,#hint.gone{opacity:0;pointer-events:none}
     <div style="--c:var(--pink)">
       <div class="big rv" style="--d:2"><span class="n" data-count="8">8</span><span class="u">WEEKS<small>BEFORE</small></span></div>
       <div class="node rv-s" style="--d:4"></div>
-      <ul class="flag">
+      <ul>
         <li class="rv" style="--d:5">First Survey + Digital Passport</li>
         <li class="rv" style="--d:6">Meet Student Guide Online</li>
         <li class="rv" style="--d:7">Individual Introduction Video + Team Introduction Video</li>
@@ -668,31 +665,50 @@ body.idle #hint,#hint.gone{opacity:0;pointer-events:none}
 <!-- ============================ 06 8 WEEKS BEFORE ============================ -->
 <section class="slide" id="s6" data-sec="2">
   <h2 class="title rv" style="--d:0"><em style="--c:var(--pink)">8 weeks</em> before event</h2>
-  <div class="steps">
-    <div class="step rv" style="--d:2;--c:var(--amber);--t:var(--amber-t)">
-      <div class="head"><span class="bubble"><i class="ic" data-i="flag"></i></span><h3>START</h3></div>
-      <ul>
-        <li class="rv" style="--d:4"><i class="ic" data-i="passport"></i>First Survey + Digital Passport Starts</li>
-        <li class="rv" style="--d:5"><i class="ic" data-i="guide"></i>Meet Student Guide Online</li>
-      </ul>
+  <div class="rail"><b class="grow-x" style="--d:1"></b></div>
+  <div class="weeks">
+    <div class="wk" style="--c:var(--amber);--t:var(--amber-t)">
+      <span class="ring rv-s" style="--d:2"><b>W1</b></span>
+      <span class="focus rv" style="--d:3">START</span>
+      <div class="items rv" style="--d:4"><span>Personal Survey</span><span>Student Guide assigned</span><span>Digital Passport activated</span><span>Team Video Brief</span></div>
     </div>
-    <div class="step rv" style="--d:4;--c:var(--blue);--t:var(--blue-t)">
-      <div class="head"><span class="bubble"><i class="ic" data-i="video"></i></span><h3>INTRODUCE</h3></div>
-      <ul>
-        <li class="rv" style="--d:6"><i class="ic" data-i="user"></i>Individual Introduction Video</li>
-        <li class="rv" style="--d:7"><i class="ic" data-i="people"></i>Team Introduction Video</li>
-        <li class="rv" style="--d:8"><i class="ic" data-i="doc"></i>Team Declaration</li>
-      </ul>
+    <div class="wk" style="--c:var(--purple);--t:var(--purple-t)">
+      <span class="ring rv-s" style="--d:3"><b>W2</b></span>
+      <span class="focus rv" style="--d:4">SHOW YOURSELF</span>
+      <div class="items rv" style="--d:5"><span>Visual Self-Introduction → Smart Profile complete</span><span>Two Team Mystery Cards</span><span>Student Guide first direct contact</span></div>
     </div>
-    <div class="step rv" style="--d:6;--c:var(--pink);--t:var(--pink-t)">
-      <div class="head"><span class="bubble"><i class="ic" data-i="link"></i></span><h3>CONNECT</h3></div>
-      <ul>
-        <li class="rv" style="--d:8"><i class="ic" data-i="mask"></i>Mystery Connection</li>
-        <li class="rv" style="--d:9"><i class="ic" data-i="coffee"></i>Online Café ×2</li>
-      </ul>
+    <div class="wk" style="--c:var(--pink);--t:var(--pink-t)">
+      <span class="ring rv-s" style="--d:4"><b>W3</b></span>
+      <span class="focus rv" style="--d:5">FIRST CONNECTION</span>
+      <div class="items rv" style="--d:6"><span class="key mt">Mystery Task 1 — Imagine Me</span><span>Team Introduction Video submitted</span></div>
+    </div>
+    <div class="wk" style="--c:var(--blue);--t:var(--blue-t)">
+      <span class="ring rv-s" style="--d:5"><b>W4</b></span>
+      <span class="focus rv" style="--d:6">MEET A TEAM</span>
+      <div class="items rv" style="--d:7"><span class="key oc">Online Café #1 — Team A</span></div>
+    </div>
+    <div class="wk" style="--c:var(--pink);--t:var(--pink-t)">
+      <span class="ring rv-s" style="--d:6"><b>W5</b></span>
+      <span class="focus rv" style="--d:7">DEEPEN</span>
+      <div class="items rv" style="--d:8"><span class="key mt">Mystery Task 2 — Find 3 Things in Common</span></div>
+    </div>
+    <div class="wk" style="--c:var(--blue);--t:var(--blue-t)">
+      <span class="ring rv-s" style="--d:7"><b>W6</b></span>
+      <span class="focus rv" style="--d:8">ANOTHER TEAM</span>
+      <div class="items rv" style="--d:9"><span class="key oc">Online Café #2 — Team B</span></div>
+    </div>
+    <div class="wk" style="--c:var(--pink);--t:var(--pink-t)">
+      <span class="ring rv-s" style="--d:8"><b>W7</b></span>
+      <span class="focus rv" style="--d:9">GET READY</span>
+      <div class="items rv" style="--d:10"><span class="key mt">Mystery Task 3 — Recognition Clue</span><span class="key cd">Competition Declaration</span></div>
+    </div>
+    <div class="wk" style="--c:var(--green);--t:var(--green-t)">
+      <span class="ring rv-s" style="--d:9"><b>W8</b></span>
+      <span class="focus rv" style="--d:10">ARRIVAL READY</span>
+      <div class="items rv" style="--d:11"><span>Final preparation</span><span>Student Guide final check-in</span><span>practical arrival information</span></div>
     </div>
   </div>
-  <div class="arrive rv" style="--d:10;--c:var(--pink)">
+  <div class="arrive rv" style="--d:12;--c:var(--pink)">
     <span class="t">ARRIVE WITH UP TO<br><span style="color:var(--pink)">11</span> FAMILIAR CONNECTIONS</span>
     <div class="people" data-people="11"></div>
   </div>
@@ -828,26 +844,29 @@ body.idle #hint,#hint.gone{opacity:0;pointer-events:none}
   <p class="caps-line rv" style="--d:9;--c:var(--blue)">Same team · two focused sessions · one reunion</p>
 </section>
 
-<!-- ============================ 12 RESET + RECHARGE (flagged) ============================ -->
-<section class="slide flag-slide" id="s12" data-sec="3">
-  <div class="flag-banner"><i class="ic" data-i="flag" style="width:14px;height:14px"></i>THIS SLIDE — TO REVISE</div>
+<!-- ============================ 12 RESET + RECHARGE ============================ -->
+<section class="slide" id="s12" data-sec="3">
   <h2 class="title rv" style="--d:0">Reset <em style="--c:var(--purple)">+ Recharge</em></h2>
   <div class="breath rv-s" style="--d:2"><span></span><span></span><span></span><b>BREATHE</b></div>
   <div class="how">
     <span class="eyebrow rv" style="--d:2">HOW IT WORKS</span>
     <div class="row3">
-      <div class="st rv" style="--d:3;--c:var(--purple)"><span class="k">01</span><h3>PAUSE OPENS</h3><p>A reset window is announced</p></div>
+      <div class="st rv" style="--d:3;--c:var(--purple)"><span class="k">01</span><h3>PAUSE OPENS</h3><p>Protected recovery window</p></div>
+      <span class="to rv" style="--d:4"><i class="ic" data-i="arrow"></i></span>
       <div class="st rv" style="--d:5;--c:var(--green)"><span class="k">02</span><h3>CHOOSE</h3>
         <div class="opts">
-          <span class="opt rv-l" style="--d:7"><i class="ic" data-i="moon"></i>Quiet space</span>
-          <span class="opt rv-l" style="--d:8"><i class="ic" data-i="walk"></i>walk</span>
-          <span class="opt rv-l" style="--d:9"><i class="ic" data-i="cup"></i>refreshment</span>
+          <span class="opt rv-l" style="--d:6"><i class="ic" data-i="leaf"></i>Meditation</span>
+          <span class="opt rv-l" style="--d:7"><i class="ic" data-i="moon"></i>Quiet Space</span>
+          <span class="opt rv-l" style="--d:8"><i class="ic" data-i="walk"></i>Walk</span>
+          <span class="opt rv-l" style="--d:9"><i class="ic" data-i="cup"></i>Refreshment</span>
+          <span class="opt rv-l" style="--d:10"><i class="ic" data-i="smile"></i>Free Time</span>
         </div>
       </div>
-      <div class="st rv" style="--d:7;--c:var(--blue)"><span class="k">03</span><h3>REJOIN</h3><p>Return when the window closes</p></div>
+      <span class="to rv" style="--d:10"><i class="ic" data-i="arrow"></i></span>
+      <div class="st rv" style="--d:11;--c:var(--blue)"><span class="k">03</span><h3>REJOIN</h3><p>Return when the window closes</p></div>
     </div>
   </div>
-  <p class="tagline rv" style="--d:11">One window. Several low-effort ways to reset.</p>
+  <p class="tagline rv" style="--d:13">One window. Several low-effort ways to reset.</p>
 </section>
 
 <!-- ============================ 13 VALUE FOR STUDENTS ============================ -->
@@ -1061,10 +1080,9 @@ body.idle #hint,#hint.gone{opacity:0;pointer-events:none}
   <div id="prog"></div>
   <span id="counter">01 / 22</span>
   <button class="ctl" id="nextBtn" aria-label="Next slide"><i class="ic" data-i="right"></i></button>
-  <button class="ctl on" id="flagBtn" aria-label="Show or hide revision flags (F)" title="Revision flags (F)"><i class="ic" data-i="flag"></i></button>
   <button class="ctl" id="fsBtn" aria-label="Full screen" title="Full screen"><i class="ic" data-i="expand"></i></button>
 </div>
-<div id="hint"><kbd>←</kbd><kbd>→</kbd> navigate · <kbd>F</kbd> flags · <kbd>Esc</kbd> close</div>
+<div id="hint"><kbd>←</kbd><kbd>→</kbd> navigate · <kbd>Esc</kbd> close</div>
 
 <!-- prototype overlay -->
 <div id="overlay" role="dialog" aria-modal="true" aria-label="Prototype">
@@ -1223,10 +1241,6 @@ body.idle #hint,#hint.gone{opacity:0;pointer-events:none}
     el.addEventListener('click', function(){ go(+el.dataset.go - 1); });
   });
 
-  /* ---------- flags ---------- */
-  var flagBtn = document.getElementById('flagBtn');
-  function toggleFlags(){ var on = document.body.classList.toggle('flags'); flagBtn.classList.toggle('on', on); }
-  flagBtn.onclick = toggleFlags;
 
   /* ---------- full screen ---------- */
   document.getElementById('fsBtn').onclick = function(){
@@ -1274,7 +1288,6 @@ body.idle #hint,#hint.gone{opacity:0;pointer-events:none}
       case 'ArrowLeft': case 'ArrowUp': case 'PageUp': case 'Backspace': e.preventDefault(); prev(); break;
       case 'Home': go(0); break;
       case 'End': go(N - 1); break;
-      case 'f': case 'F': toggleFlags(); break;
     }
   });
   var tx = null;
