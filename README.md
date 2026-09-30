@@ -11,6 +11,7 @@ Two separate things live here:
 | | What it is | Where |
 |---|---|---|
 | **Demo prototype** | The whole journey in about 90 seconds, for the university presentation. One self-contained file, no accounts, no server. | `demo/index.html` |
+| **Team Online Cafés page** | The week 2 wheel, the match board and the week 4 / 6 café chats, in the same style. Also one self-contained file. | `demo/team-cafe.html` |
 | **Live site** | What actually runs the event: accounts, exclusive characters, first-come-first-served matching, permanent chat, weekly missions, organiser console, reveal wall. | `server/` + `public/` |
 
 ---
@@ -129,7 +130,9 @@ participant's browser — hiding it in the interface would not be enough.
 ```
 demo/index.html        Self-contained presentation prototype — built, open directly
 demo/src.html          Source for the prototype; references public/assets
-tools/build-demo.js    Inlines the assets into demo/index.html
+demo/team-cafe.html    Team Online Cafés page (wheel matching) — built, open directly
+demo/team-cafe-src.html Source for the Team Online Cafés page
+tools/build-demo.js    Inlines the assets into demo/index.html and demo/team-cafe.html
 tools/seed.js          Fills a local database with fictional participants
 
 server/index.js        HTTP server, routing, sessions, JSON API, static files

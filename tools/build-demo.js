@@ -10,10 +10,19 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
-const SRC = path.join(ROOT, 'demo', 'src.html');
-const OUT = path.join(ROOT, 'demo', 'index.html');
 const read = (p) => fs.readFileSync(path.join(ROOT, 'demo', p), 'utf8');
 
+// every presentation page: [source, output]
+const PAGES = [
+  ['src.html', 'index.html'],
+  ['team-cafe-src.html', 'team-cafe.html'],
+];
+
+for (const [srcName, outName] of PAGES) build(srcName, outName);
+
+function build(srcName, outName) {
+const SRC = path.join(ROOT, 'demo', srcName);
+const OUT = path.join(ROOT, 'demo', outName);
 let html = fs.readFileSync(SRC, 'utf8');
 
 // stylesheet, with its @import of the fonts resolved first
@@ -34,10 +43,11 @@ html = html.replace(/src="([^"]+\.mp3)"/g, (_, src) => {
   return 'src="data:audio/mpeg;base64,' + data + '"';
 });
 
-html = html.replace('<head>', '<head>\n<!-- Built by tools/build-demo.js — edit demo/src.html, not this file. -->');
+html = html.replace('<head>', '<head>\n<!-- Built by tools/build-demo.js — edit demo/'+srcName+', not this file. -->');
 
 fs.writeFileSync(OUT, html);
 
 const left = html.match(/(?:src|href)="(?!data:|#)[^"]+"/g) || [];
-console.log('demo/index.html written:', (html.length / 1024).toFixed(0) + ' KB');
+console.log('demo/' + outName + ' written:', (html.length / 1024).toFixed(0) + ' KB');
 console.log(left.length ? 'external references left: ' + left.join(', ') : 'no external references');
+}
