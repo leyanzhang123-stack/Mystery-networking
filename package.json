@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node server/index.js",
     "build:demo": "node tools/build-demo.js",
+    "build:presentation": "node tools/build-presentation.js",
     "seed": "node tools/seed.js"
   },
   "devDependencies": {
