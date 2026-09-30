@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Team Online Cafés — one slide</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23FCFCFB'/><rect x='3' y='6' width='3' height='3' fill='%230E0E12'/><rect x='10' y='6' width='3' height='3' fill='%238B5CF6'/></svg>" />
+<link rel="stylesheet" href="../public/assets/ui.css" />
+<style>
+  html,body{height:100%;overflow:hidden;background:var(--paper)}
+  /* a fixed 1920x1080 slide, scaled to whatever screen it is shown on */
+  #slide{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;padding:64px 88px;display:grid;
+    grid-template-columns:840px 1fr;gap:70px;align-items:center}
+  .kick{display:flex;align-items:center;gap:16px;position:absolute;left:88px;top:54px;right:88px}
+  .kick .bar{width:70px;height:10px;border-radius:5px;background:var(--accent)}
+  .kick .label{font-size:16px}
+  .kick .grow{flex:1}
+
+  .left{padding-top:34px}
+  .left h1{font-size:92px;margin:0 0 26px;line-height:.96}
+  .left h1 .serif{font-weight:400}
+  .what{font-size:27px;line-height:1.45;color:var(--ink-2);margin:0 0 34px;max-width:780px}
+  .what b{color:var(--ink)}
+  .facts{display:flex;gap:14px;margin-bottom:38px}
+  .fact{flex:1;background:var(--paper-2);border:1px solid var(--line);border-radius:4px;padding:18px 20px}
+  .fact b{display:block;font-family:var(--display);font-weight:800;font-size:40px;letter-spacing:-.04em;line-height:1}
+  .fact span{display:block;margin-top:6px;font-size:16px;line-height:1.3;color:var(--ink-2)}
+  .steps3{border-top:1px solid var(--line)}
+  .st{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:19px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .st .wk{font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:-.03em;color:var(--accent)}
+  .st .wk small{display:block;font-family:var(--body);font-weight:600;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);margin-top:2px}
+  .st p{margin:0;font-size:22px;line-height:1.4;color:var(--ink-2)}
+  .st p b{color:var(--ink);font-weight:700}
+
+  /* ------------------------------ wheel ----------------------------- */
+  .right{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:26px}
+  .wheel-box{position:relative;width:800px;height:800px}
+  #wheel{position:absolute;inset:0;width:100%;height:100%;transition:transform 4.6s cubic-bezier(.13,.72,.08,1)}
+  .wheel-ring{position:absolute;inset:-14px;border:1px solid var(--line-2);border-radius:50%}
+  .wheel-shadow{position:absolute;inset:0;border-radius:50%;box-shadow:0 50px 90px -56px rgba(20,21,26,.6)}
+  .seg path{fill:var(--c);stroke:var(--paper);stroke-width:2;transition:fill .4s var(--ease)}
+  .seg text{font-family:var(--body);fill:var(--ink);transition:fill .4s var(--ease),opacity .4s var(--ease)}
+  .seg .num{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.04em}
+  .seg .nm{font-weight:600;font-size:15px;letter-spacing:-.01em}
+  .seg.me path{fill:var(--ink)} .seg.me text{fill:#fff}
+  .seg.out path{fill:var(--paper-3)} .seg.out text{opacity:.3}
+  .seg.hit path{fill:var(--accent)} .seg.hit text{fill:#fff}
+  .pointer{position:absolute;left:50%;top:-28px;width:44px;height:60px;margin-left:-22px;z-index:3;background:var(--ink);
+    clip-path:polygon(50% 100%,0 12%,18% 0,82% 0,100% 12%);transform-origin:50% 10%}
+  .pointer::after{content:"";position:absolute;left:14px;top:10px;width:16px;height:16px;border-radius:50%;background:var(--paper)}
+  .spinning .pointer{animation:flick .16s linear infinite}
+  @keyframes flick{0%,100%{transform:rotate(0)}50%{transform:rotate(-9deg)}}
+  .hub{position:absolute;left:50%;top:50%;width:200px;height:200px;transform:translate(-50%,-50%);z-index:2;border-radius:50%;
+    background:var(--paper-2);border:1px solid var(--line-2);box-shadow:0 14px 34px -16px rgba(20,21,26,.5);display:grid;place-items:center}
+  .hub button{all:unset;cursor:pointer;width:176px;height:176px;border-radius:50%;background:var(--ink);color:#fff;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:4px;transition:background .3s var(--ease),transform .4s var(--ease)}
+  .hub button:hover:not([disabled]){background:var(--accent);transform:scale(1.04)}
+  .hub button[disabled]{opacity:.35;cursor:not-allowed}
+  .hub .big{font-family:var(--display);font-weight:800;font-size:38px;letter-spacing:-.03em;line-height:1}
+  .hub .sm{font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+
+  .result{height:118px;margin-top:40px;width:800px;display:flex;align-items:center;justify-content:center}
+  .res{display:flex;align-items:center;gap:22px;background:var(--paper-2);border:1px solid var(--accent-line);border-radius:4px;padding:12px 28px;animation:pop .55s var(--ease) both}
+  .res .px-tile{width:72px;padding:6px}
+  .res .t{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:-.03em;line-height:1.1}
+  .res .t em{font-family:var(--serif);font-weight:400;color:var(--accent);font-size:34px;margin:0 8px}
+  .res .s{font-size:15px;color:var(--ink-2);margin-top:3px}
+  .hint{font-size:18px;color:var(--ink-3);letter-spacing:.02em}
+  .hint b{color:var(--ink);font-weight:700}
+  .count{position:absolute;right:0;top:54px;font-size:14px}
+  #field{z-index:0}
+</style>
+</head>
+<body>
+<canvas id="field"></canvas>
+<div id="slide" class="page">
+  <div class="kick"><span class="bar"></span><span class="label">Layer 1 · Team Online Cafés</span><span class="grow"></span><span class="label" id="cnt">0 / 16 teams matched</span></div>
+
+  <div class="left">
+    <h1 class="display">Two cafés,<br><span class="serif">picked by a wheel.</span></h1>
+    <p class="what">Teams from different universities meet online for <b>two relaxed 30-minute chats</b>. A Student Guide gives them a topic. The goal: <b>break the ice and start networking</b> before the event.</p>
+    <div class="facts">
+      <div class="fact"><b>16</b><span>teams, each from a different university</span></div>
+      <div class="fact"><b>4</b><span>students per team, one captain</span></div>
+      <div class="fact"><b>8 + 1</b><span>two teams plus a Student Guide per café</span></div>
+    </div>
+    <div class="steps3">
+      <div class="st"><div class="wk">Week 2<small>The wheel</small></div><p>Each <b>team captain spins</b> the wheel. Whoever it lands on is your partner team.</p></div>
+      <div class="st"><div class="wk">Week 4<small>Café 1</small></div><p>The Guide adds both teams to a <b>WhatsApp group</b> and sets a topic. Café 1 is the team <b>you landed on</b>.</p></div>
+      <div class="st"><div class="wk">Week 6<small>Café 2</small></div><p>Same again, with the team that <b>landed on you</b>. Every team meets exactly two others.</p></div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="wheel-box" id="wheelBox">
+      <div class="wheel-shadow"></div><div class="wheel-ring"></div>
+      <div class="pointer"></div>
+      <svg id="wheel" viewBox="0 0 600 600" aria-label="Wheel of 16 university teams"></svg>
+      <div class="hub"><button id="spinBtn"><span class="big">SPIN</span><span class="sm" id="spinSub">Team 01</span></button></div>
+    </div>
+    <div class="result" id="result"></div>
+  </div>
+</div>
+
+<script src="../public/assets/pixel.js"></script>
+<script src="../public/assets/grain.js"></script>
+<script>
+(function(){
+"use strict";
+GRAIN.speckle(document.getElementById('field'), { density: 1/620, colour:'#101014', seed: 20270312 });
+
+/* fit the 1920x1080 slide to the window */
+var slide = document.getElementById('slide');
+function fit(){
+  var k = Math.min(innerWidth/1920, innerHeight/1080);
+  slide.style.transform = 'scale('+k+')';
+  slide.style.left = ((innerWidth - 1920*k)/2)+'px';
+  slide.style.top = ((innerHeight - 1080*k)/2)+'px';
+}
+addEventListener('resize', fit); fit();
+
+/* ------------------------------ data ---------------------------------- */
+// Edit this list to change the universities. Keep it at 16.
+var UNIS = ['Metropolia','Laurea','Haaga-Helia','Arcada','HAMK','Tampere UAS','Turku UAS','Oulu UAS',
+            'JAMK','Savonia','Karelia','LAB','Lapland UAS','Centria','SAMK','Kajaani UAS'];
+var N = UNIS.length, STEP = 360 / N, TINTS = ['#EFE9FE','#DEF6EC','#FDE6F1','#FFF0D6'];
+var cast = PIXEL.catalogue(N * 4);
+var teams = UNIS.map(function(u,i){ return { i:i, n:String(i+1).padStart(2,'0'), uni:u, tint:TINTS[i%4], cap:cast[i*4] }; });
+
+var picks = new Array(N).fill(null), pickedBy = new Array(N).fill(null);
+var cur = 0, spinning = false, rot = 0, lastHit = null, lastEdge = null, ms = 4600;
+
+/* a choice is fair if it is not yourself, not already taken, and leaves the
+   remaining teams able to finish (no 2-team loops, no stranded leftovers) */
+function feasible(i, t){
+  var p = picks.slice(); p[i] = t;
+  var len = 1, c = t;
+  while (c !== null && c !== i && len <= N){ c = p[c]; len++; }
+  if (c === i && len < 3) return false;
+  var open = 0;
+  for (var s = 0; s < N; s++){
+    var x = p[s], k = 0;
+    while (x !== null && x !== s && k <= N){ x = p[x]; k++; }
+    if (x !== s) open++;
+  }
+  return open !== 1 && open !== 2;
+}
+function options(i){ var o=[]; for (var t=0;t<N;t++) if (t!==i && pickedBy[t]===null && feasible(i,t)) o.push(t); return o; }
+function done(){ return picks.every(function(x){ return x !== null; }); }
+
+/* ------------------------------ wheel --------------------------------- */
+var wheel = document.getElementById('wheel');
+function pol(r,deg){ var a=deg*Math.PI/180; return [300+r*Math.sin(a), 300-r*Math.cos(a)]; }
+wheel.innerHTML = teams.map(function(t,i){
+  var p0 = pol(292, i*STEP-STEP/2), p1 = pol(292, i*STEP+STEP/2);
+  return '<g class="seg" id="seg'+i+'" style="--c:'+t.tint+'"><path d="M300 300 L'+p0[0].toFixed(2)+' '+p0[1].toFixed(2)+' A292 292 0 0 1 '+p1[0].toFixed(2)+' '+p1[1].toFixed(2)+' Z"/>'+
+    '<g transform="rotate('+(i*STEP-90)+' 300 300)"><text class="num" x="566" y="300" text-anchor="end" dominant-baseline="central">'+t.n+'</text>'+
+    '<text class="nm" x="508" y="300" text-anchor="end" dominant-baseline="central">'+t.uni+'</text></g></g>';
+}).join('');
+function paint(){
+  teams.forEach(function(t,i){
+    var c = [];
+    if (i === cur && !spinning && picks[i] === null) c.push('me');
+    else if (pickedBy[i] !== null && i !== lastHit) c.push('out');
+    if (i === lastHit) c.push('hit');
+    document.getElementById('seg'+i).setAttribute('class','seg '+c.join(' '));
+  });
+  var n = picks.filter(function(x){ return x!==null; }).length;
+  document.getElementById('cnt').textContent = n + ' / 16 teams matched';
+  document.getElementById('spinSub').textContent = done() ? 'Done' : 'Team ' + teams[cur].n;
+  document.getElementById('spinBtn').disabled = spinning || done();
+  var r = document.getElementById('result');
+  if (lastEdge){
+    var a = teams[lastEdge[0]], b = teams[lastEdge[1]];
+    r.innerHTML = '<div class="res"><div class="px-tile">'+PIXEL.svg(a.cap.spec,{level:3})+'</div>'+
+      '<div><div class="t">'+a.uni+'<em>&times;</em>'+b.uni+'</div><div class="s">'+(done()?'All 16 teams matched. Press R to start again.':'Matched. Next up: '+teams[cur].uni+'’s captain.')+'</div></div>'+
+      '<div class="px-tile">'+PIXEL.svg(b.cap.spec,{level:3})+'</div></div>';
+  } else {
+    r.innerHTML = '<div class="hint">Captain, press <b>SPIN</b> or hit <b>Space</b>.</div>';
+  }
+}
+
+function spin(){
+  if (spinning || done()) return;
+  var o = options(cur); if (!o.length) return;
+  var target = o[Math.floor(Math.random()*o.length)];
+  var delta = (((-target*STEP - rot) % 360) + 360) % 360;
+  rot += 360*6 + delta + (Math.random()-.5)*STEP*.6;
+  spinning = true; lastHit = null;
+  var box = document.getElementById('wheelBox'); box.classList.add('spinning');
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches, d = reduced ? 50 : ms;
+  wheel.style.transitionDuration = d+'ms'; wheel.style.transform = 'rotate('+rot+'deg)';
+  paint();
+  setTimeout(function(){
+    spinning = false; box.classList.remove('spinning');
+    picks[cur] = target; pickedBy[target] = cur; lastHit = target; lastEdge = [cur, target];
+    var from = cur;
+    for (var k = 1; k <= N; k++){ var j = (from+k)%N; if (picks[j] === null){ cur = j; break; } }
+    paint();
+    setTimeout(function(){ if (!spinning){ lastHit = null; paint(); } }, 2200);
+  }, d + 80);
+}
+function reset(){
+  if (spinning) return;
+  picks.fill(null); pickedBy.fill(null); cur = 0; lastHit = null; lastEdge = null; paint();
+}
+document.getElementById('spinBtn').onclick = spin;
+addEventListener('keydown', function(e){
+  if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); spin(); }
+  else if (e.key === 'r' || e.key === 'R') reset();
+});
+paint();
+window.SLIDE = { picks: picks, pickedBy: pickedBy, N: N, fast: function(){ ms = 300; } };
+})();
+</script>
+</body>
+</html>

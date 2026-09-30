@@ -12,6 +12,7 @@ Two separate things live here:
 |---|---|---|
 | **Demo prototype** | The whole journey in about 90 seconds, for the university presentation. One self-contained file, no accounts, no server. | `demo/index.html` |
 | **Team Online Cafés page** | The week 2 wheel, the match board and the week 4 / 6 café chats, in the same style. Also one self-contained file. | `demo/team-cafe.html` |
+| **Team Online Cafés, one slide** | The same idea as a single 16:9 slide for the presentation: short explanation on the left, spinnable wheel on the right. Space spins, R resets. | `demo/team-cafe-slide.html` |
 | **Live site** | What actually runs the event: accounts, exclusive characters, first-come-first-served matching, permanent chat, weekly missions, organiser console, reveal wall. | `server/` + `public/` |
 
 ---
@@ -132,6 +133,8 @@ demo/index.html        Self-contained presentation prototype — built, open dir
 demo/src.html          Source for the prototype; references public/assets
 demo/team-cafe.html    Team Online Cafés page (wheel matching) — built, open directly
 demo/team-cafe-src.html Source for the Team Online Cafés page
+demo/team-cafe-slide.html One-slide version for presenting — built, open directly
+demo/team-cafe-slide-src.html Source for the one-slide version
 tools/build-demo.js    Inlines the assets into demo/index.html and demo/team-cafe.html
 tools/seed.js          Fills a local database with fictional participants
 

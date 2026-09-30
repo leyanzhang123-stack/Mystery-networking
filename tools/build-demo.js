@@ -16,6 +16,7 @@ const read = (p) => fs.readFileSync(path.join(ROOT, 'demo', p), 'utf8');
 const PAGES = [
   ['src.html', 'index.html'],
   ['team-cafe-src.html', 'team-cafe.html'],
+  ['team-cafe-slide-src.html', 'team-cafe-slide.html'],
 ];
 
 for (const [srcName, outName] of PAGES) build(srcName, outName);
